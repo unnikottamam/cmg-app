@@ -2,12 +2,15 @@ node_modules/
 .expo/
 npm-debug.*
 *.jks
+*.env
+*.env.development
 *.p8
 *.p12
 *.key
 *.mobileprovision
 *.orig.*
 web-build/
+package-lock.json
 
 # macOS
 .DS_Store
