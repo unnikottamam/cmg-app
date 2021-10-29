@@ -8,6 +8,8 @@ import Account from "./Account";
 import Home from "./Home";
 import { StyleSheet, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch } from "react-redux";
+import * as authActions from "../store/actions/auth";
 
 function HomeScreen() {
   return <Home />;
@@ -29,26 +31,30 @@ const Tab = createBottomTabNavigator();
 
 export default function HomeStackScreen() {
   const { colors } = useTheme();
-
   const [isLogged, setIsLogged] = React.useState(false);
-  const getData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem("userinfo");
-      jsonValue != null ? setIsLogged(true) : setIsLogged(false);
-    } catch (e) {
-      setIsLogged(false);
-    }
-  };
-  getData();
 
-  const logout = () => {
-    const clearAll = async () => {
-      try {
+  const dispatch = useDispatch();
+  React.useEffect(() => {
+    const tryLogin = async () => {
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) {
         setIsLogged(false);
-        await AsyncStorage.clear();
-      } catch (e) {}
+        return;
+      }
+      const transformedData = JSON.parse(userData);
+      try {
+        dispatch(authActions.authenticate(transformedData));
+        setIsLogged(true);
+      } catch (err) {
+        setIsLogged(false);
+      }
     };
-    clearAll();
+    tryLogin();
+  }, [dispatch]);
+
+  const logout = async () => {
+    await AsyncStorage.removeItem("userData");
+    setIsLogged(false);
   };
 
   return (

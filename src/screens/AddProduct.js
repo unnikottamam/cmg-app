@@ -1,8 +1,10 @@
 import * as React from "react";
 import {
+  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -21,14 +23,19 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import RNPickerSelect from "react-native-picker-select";
 import * as ImagePicker from "expo-image-picker";
-import AntDesign from "react-native-vector-icons/AntDesign";
 import { Video } from "expo-av";
+import AntDesign from "react-native-vector-icons/AntDesign";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
 
+const { width: screenWidth } = Dimensions.get("window");
 export default function AddProduct() {
   const { colors } = useTheme();
   const navigation = useNavigation();
 
   const [featuredImage, setFeaturedImage] = React.useState(null);
+  let [maxGallery, setMaxGallery] = React.useState(0);
+  const [galleryImages, setGalleryImages] = React.useState([]);
   const [productVideo, setProductVideo] = React.useState(null);
   const video = React.useRef(null);
   const [errVisible, setErrVisible] = React.useState(false);
@@ -57,6 +64,7 @@ export default function AddProduct() {
   React.useEffect(() => {
     register("prodVideo");
     register("featImg", { required: true });
+    register("galImages");
   }, [register]);
 
   const pickFeaturedImage = async () => {
@@ -70,6 +78,29 @@ export default function AddProduct() {
       setFeaturedImage(result.uri);
       setValue("featImg", result.uri, { shouldValidate: true });
     }
+  };
+
+  const pickGalleryImages = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.cancelled && maxGallery < 8) {
+      setGalleryImages([...galleryImages, { id: uuidv4(), url: result.uri }]);
+      setMaxGallery(maxGallery + 1);
+      setValue("galImages", galleryImages);
+    }
+  };
+
+  const removeGalleryImages = (imageID) => {
+    setGalleryImages(galleryImages.filter((item) => item.id !== imageID));
+    setValue(
+      "galImages",
+      galleryImages.filter((item) => item.id !== imageID)
+    );
+    setMaxGallery(maxGallery - 1);
   };
 
   const removeProductVideo = () => {
@@ -92,6 +123,7 @@ export default function AddProduct() {
   };
 
   const onSubmit = (data) => {
+    console.log(data);
     navigation.navigate("Products", { productAdded: true, id: 361 });
   };
 
@@ -428,12 +460,22 @@ export default function AddProduct() {
         <Title style={styles.titleText}>Images & Video</Title>
         <View style={styles.mediaWrap}>
           {featuredImage && (
-            <Image source={{ uri: featuredImage }} style={styles.imageStyles} />
+            <View style={styles.featuredWrap}>
+              <Image
+                source={{ uri: featuredImage }}
+                style={{
+                  width: screenWidth * 0.7,
+                  height: screenWidth * 0.7,
+                  ...styles.imageStyles,
+                }}
+              />
+            </View>
           )}
           <Button
             uppercase={false}
             icon="image"
             mode="outlined"
+            style={styles.addMediaBtn}
             onPress={pickFeaturedImage}
           >
             {featuredImage ? "Change Featured Image" : "Select Featured Image"}
@@ -442,14 +484,55 @@ export default function AddProduct() {
             <HelperText type="error">Featured image is required.</HelperText>
           )}
 
-          <Button uppercase={false} icon="image" mode="outlined">
-            Select Gallery Images
-          </Button>
+          {galleryImages && (
+            <View style={styles.galWrap}>
+              {galleryImages.map((image) => (
+                <View
+                  key={image.id}
+                  style={{
+                    width: screenWidth * 0.3,
+                    height: screenWidth * 0.3,
+                    ...styles.galItem,
+                  }}
+                >
+                  <Pressable
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderColor: colors.primary,
+                      ...styles.closeBtn,
+                    }}
+                    onPress={() => removeGalleryImages(image.id)}
+                  >
+                    <AntDesign name="close" color={colors.primary} size={16} />
+                  </Pressable>
+                  <Image
+                    source={{ uri: image.url }}
+                    style={styles.galItemImg}
+                  />
+                </View>
+              ))}
+            </View>
+          )}
+
+          {maxGallery < 8 && (
+            <Button
+              uppercase={false}
+              icon="image"
+              mode="outlined"
+              onPress={pickGalleryImages}
+            >
+              Select Gallery Images
+            </Button>
+          )}
 
           {productVideo ? (
             <View style={styles.videoBox}>
               <Video
-                style={styles.videoItem}
+                style={{
+                  width: screenWidth * 0.7,
+                  height: screenWidth * 0.7,
+                  ...styles.videoItem,
+                }}
                 resizeMode="cover"
                 ref={video}
                 source={{
@@ -472,6 +555,7 @@ export default function AddProduct() {
               uppercase={false}
               icon="video"
               mode="outlined"
+              style={styles.addMediaBtn}
               onPress={pickProductVideo}
             >
               Select Product Video
@@ -542,10 +626,11 @@ const styles = StyleSheet.create({
   divider: {
     marginVertical: 8,
   },
+  featuredWrap: {
+    alignItems: "center",
+  },
   imageStyles: {
-    width: 100,
-    height: 100,
-    borderRadius: 100,
+    borderRadius: 300,
   },
   videoBox: {
     flex: 1,
@@ -554,12 +639,45 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   videoItem: {
-    width: 220,
-    height: 220,
     borderRadius: 5,
     marginBottom: 10,
   },
   mediaWrap: {
     marginBottom: 5,
+  },
+  galWrap: {
+    flex: 3,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: -4,
+    marginTop: 8,
+  },
+  addMediaBtn: {
+    marginTop: 8,
+  },
+  galItem: {
+    position: "relative",
+    paddingHorizontal: 4,
+    marginVertical: 4,
+  },
+  galItemImg: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  closeBtn: {
+    position: "absolute",
+    right: 10,
+    top: 5,
+    width: 34,
+    height: 34,
+    borderWidth: 2,
+    zIndex: 9,
+    borderRadius: 34,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

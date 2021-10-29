@@ -8,27 +8,35 @@ import Login from "./Login";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { connect, useDispatch } from "react-redux";
+import * as authActions from "../store/actions/auth";
 
 const AccountTab = createMaterialTopTabNavigator();
 
-export default function Account() {
+const Account = ({ token }) => {
   const { colors } = useTheme();
   const navigation = useNavigation();
-
   const [isLogged, setIsLogged] = React.useState(false);
-  const getData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem("userinfo");
-      if (jsonValue != null) {
+
+  const dispatch = useDispatch();
+  console.log(token);
+  React.useEffect(() => {
+    const tryLogin = async () => {
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) {
+        setIsLogged(false);
+        return;
+      }
+      const transformedData = JSON.parse(userData);
+      try {
+        dispatch(authActions.authenticate(transformedData));
         setIsLogged(true);
-      } else {
+      } catch (err) {
         setIsLogged(false);
       }
-    } catch (e) {
-      setIsLogged(false);
-    }
-  };
-  getData();
+    };
+    tryLogin();
+  }, [dispatch]);
 
   return isLogged ? (
     <AccountTab.Navigator>
@@ -65,13 +73,15 @@ export default function Account() {
         >
           Register
         </Button>
-        <Divider
-          style={{ backgroundColor: colors.primary, ...styles.divider }}
-        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
-}
+};
+
+const mapStateToProps = (state) => ({
+  token: state.token,
+});
+export default connect(mapStateToProps)(Account);
 
 const styles = StyleSheet.create({
   scrollView: {

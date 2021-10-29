@@ -12,7 +12,6 @@ import {
   Divider,
   HelperText,
   Snackbar,
-  Text,
   TextInput,
   Title,
   useTheme,
@@ -21,6 +20,7 @@ import RNPickerSelect from "react-native-picker-select";
 import ReCaptchaV3 from "@haskkor/react-native-recaptchav3";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { CAPTCHA_KEY, WEB_URL } from "../config";
 
 export default function Register() {
   const { colors } = useTheme();
@@ -295,14 +295,12 @@ export default function Register() {
       shop_name: yup.string().required(),
       username: yup.string().required(),
       password: yup.string().required(),
-      email_id: yup
-        .string()
-        .email()
-        .required(),
+      email_id: yup.string().email().required(),
       cellnumber: yup.string().required(),
       country: yup.string().required(),
       state: yup.string().required(),
       zipcode: yup.string().required(),
+      terms: yup.boolean().required(),
     })
     .required();
 
@@ -323,7 +321,7 @@ export default function Register() {
     register("recaptcha", { required: true });
     register("terms", { required: true });
   }, [register]);
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log(data);
   };
 
@@ -633,12 +631,18 @@ export default function Register() {
           status={checked ? "checked" : "unchecked"}
           onPress={() => {
             setChecked(!checked);
-            setValue("terms", !checked);
+            setValue("terms", !checked, { shouldValidate: true });
           }}
+          name="terms"
         />
+        {errors.terms && (
+          <HelperText type="error">
+            Please Agree our Terms & Conditions.
+          </HelperText>
+        )}
         <ReCaptchaV3
-          captchaDomain={"https://coastmachinery.com"}
-          siteKey={"6Ler7IQaAAAAAOCd21S817XzVsQJ18_wMIvnhUNE"}
+          captchaDomain={WEB_URL}
+          siteKey={CAPTCHA_KEY}
           onReceiveToken={(token) =>
             setValue("recaptcha", token, { shouldValidate: true })
           }

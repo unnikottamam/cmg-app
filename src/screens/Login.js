@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet } from "react-native";
+import { Alert, StyleSheet } from "react-native";
 import {
   Button,
   HelperText,
@@ -12,7 +12,9 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch } from "react-redux";
+import * as authActions from "../store/actions/auth";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function Login() {
   const { colors } = useTheme();
@@ -33,40 +35,18 @@ export default function Login() {
 
   const [errVisible, setErrVisible] = React.useState(false);
   const onDismissSnackBar = () => setErrVisible(false);
-
-  const onSubmit = (data) => {
-    fetch("https://stag.coastmachinery.com/wp-json/jwt-auth/v1/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: data.username,
-        password: data.password,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.token && data.roles.includes("vendor")) {
-          setErrVisible(false);
-          const storeData = async (data) => {
-            try {
-              const jsonValue = JSON.stringify(data);
-              await AsyncStorage.setItem("userinfo", jsonValue);
-            } catch (e) {
-              setErrVisible(true);
-            }
-          };
-          storeData(data);
-        } else {
-          setErrVisible(true);
-        }
-      });
+  const dispatch = useDispatch();
+  const onSubmit = async (data) => {
+    try {
+      dispatch(authActions.login(data));
+      setErrVisible(false);
+    } catch (err) {
+      setErrVisible(true);
+    }
   };
-  const onError = () => {};
 
   return (
-    <>
+    <ScrollView>
       <Title style={{ color: colors.primary, ...styles.titleText }}>
         Login to your Account
       </Title>
@@ -77,7 +57,7 @@ export default function Login() {
         }}
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            style={styles.textInput}
+            style={{ backgroundColor: colors.surface, ...styles.textInput }}
             mode="outlined"
             onBlur={onBlur}
             onChangeText={onChange}
@@ -101,7 +81,7 @@ export default function Login() {
         }}
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            style={styles.textInput}
+            style={{ backgroundColor: colors.surface, ...styles.textInput }}
             mode="outlined"
             onBlur={onBlur}
             onChangeText={onChange}
@@ -131,7 +111,7 @@ export default function Login() {
         }}
         contentStyle={styles.buttonContent}
         labelStyle={styles.buttonLbl}
-        onPress={handleSubmit(onSubmit, onError)}
+        onPress={handleSubmit(onSubmit)}
       >
         Login
       </Button>
@@ -144,7 +124,7 @@ export default function Login() {
       >
         Login Failed.
       </Snackbar>
-    </>
+    </ScrollView>
   );
 }
 

@@ -18,7 +18,9 @@ import ProductDetails from "./src/screens/ProductDetail";
 import CatDetails from "./src/screens/CatDetails";
 import Register from "./src/screens/Register";
 import { Provider } from "react-redux";
-import { store } from "./src/redux/store";
+import { applyMiddleware, combineReducers, createStore } from "redux";
+import thunk from "redux-thunk";
+import authReducer from "./src/store/reducers/auth";
 
 const CombinedDefaultTheme = {
   ...PaperDefaultTheme,
@@ -57,6 +59,10 @@ const CombinedDarkTheme = {
   },
 };
 
+const rootReducer = combineReducers({
+  auth: authReducer,
+});
+const store = createStore(rootReducer, applyMiddleware(thunk));
 const Stack = createNativeStackNavigator();
 
 export default function App() {

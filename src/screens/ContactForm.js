@@ -17,6 +17,8 @@ import RNPickerSelect from "react-native-picker-select";
 import ReCaptchaV3 from "@haskkor/react-native-recaptchav3";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { CAPTCHA_KEY, WEB_URL } from "../config";
+import axios from "axios";
 
 export default function ContactForm({ title }) {
   const shipping = title.match(/shipping/i) ? true : false;
@@ -25,10 +27,7 @@ export default function ContactForm({ title }) {
     .object({
       recaptcha: yup.string().required(),
       full_name: yup.string().required(),
-      email_address: yup
-        .string()
-        .email()
-        .required(),
+      email_id: yup.string().email().required(),
       phone_number:
         shipping || offer
           ? yup.string().required()
@@ -57,8 +56,14 @@ export default function ContactForm({ title }) {
     register("recaptcha", { required: true });
   }, [register]);
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    const response = await axios.post(
+      `${WEB_URL}/wp-content/themes/coast-machinery/inc/form-action.php`,
+      stringify(data)
+    );
+    if (response) {
+      console.log(response);
+    }
   };
   const onError = () => {};
 
@@ -109,10 +114,10 @@ export default function ContactForm({ title }) {
               returnKeyType="done"
             />
           )}
-          name="email_address"
+          name="email_id"
           defaultValue=""
         />
-        {errors.email_address && (
+        {errors.email_id && (
           <HelperText type="error">Email address is required</HelperText>
         )}
 
@@ -259,8 +264,8 @@ export default function ContactForm({ title }) {
           <HelperText type="error">Message is required</HelperText>
         )}
         <ReCaptchaV3
-          captchaDomain={"https://coastmachinery.com"}
-          siteKey={"6Ler7IQaAAAAAOCd21S817XzVsQJ18_wMIvnhUNE"}
+          captchaDomain={WEB_URL}
+          siteKey={CAPTCHA_KEY}
           onReceiveToken={(token) =>
             setValue("recaptcha", token, { shouldValidate: true })
           }
