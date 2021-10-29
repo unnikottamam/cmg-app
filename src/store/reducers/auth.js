@@ -11,6 +11,7 @@ export default (state = initialState, action) => {
   switch (action.type) {
     case LOGIN:
       return {
+        ...state,
         token: action.token,
         roles: action.roles,
         userid: action.userid,
@@ -18,6 +19,7 @@ export default (state = initialState, action) => {
       };
     case AUTHENTICATE:
       return {
+        ...state,
         isUserLogged: true,
       };
     default:

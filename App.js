@@ -1,5 +1,6 @@
 import * as React from "react";
 import {
+  Button,
   DarkTheme as PaperDarkTheme,
   DefaultTheme as PaperDefaultTheme,
   Provider as PaperProvider,
@@ -84,6 +85,11 @@ export default function App() {
                 name="ProductDetails"
                 options={{
                   title: "",
+                  headerRight: () => (
+                    <Button icon="phone" uppercase={false}>
+                      Call Us
+                    </Button>
+                  ),
                 }}
                 component={ProductDetails}
               />
@@ -99,7 +105,9 @@ export default function App() {
               />
               <Stack.Screen
                 name="Register"
-                options={{ title: "Vendor Registration" }}
+                options={{
+                  title: "Vendor Registration",
+                }}
                 component={Register}
               />
             </Stack.Navigator>

@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export const LOGIN = "LOGIN";
 export const AUTHENTICATE = "AUTHENTICATE";
 
-export const authenticate = (data) => {
+export const authenticate = () => {
   return async (dispatch) => {
     const response = await fetch(
       "https://stag.coastmachinery.com/wp-json/jwt-auth/v1/token/validate/",
