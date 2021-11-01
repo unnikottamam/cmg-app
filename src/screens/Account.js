@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, ScrollView, StyleSheet } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AddProduct from "./AddProduct";
 import CatDetails from "./CatDetails";
-import { Button, Divider, Text, useTheme } from "react-native-paper";
+import { Button, Divider, useTheme } from "react-native-paper";
 import Login from "./Login";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useNavigation } from "@react-navigation/native";
@@ -13,13 +13,12 @@ import * as authActions from "../store/actions/auth";
 
 const AccountTab = createMaterialTopTabNavigator();
 
-const Account = ({ token }) => {
+const Account = () => {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const [isLogged, setIsLogged] = React.useState(false);
 
   const dispatch = useDispatch();
-  console.log(token);
   React.useEffect(() => {
     const tryLogin = async () => {
       const userData = await AsyncStorage.getItem("userData");
@@ -36,7 +35,7 @@ const Account = ({ token }) => {
       }
     };
     tryLogin();
-  }, [dispatch]);
+  }, []);
 
   return isLogged ? (
     <AccountTab.Navigator>

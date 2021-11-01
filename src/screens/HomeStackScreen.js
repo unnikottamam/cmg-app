@@ -50,7 +50,7 @@ export default function HomeStackScreen() {
       }
     };
     tryLogin();
-  }, [dispatch]);
+  }, []);
 
   const logout = async () => {
     await AsyncStorage.removeItem("userData");
