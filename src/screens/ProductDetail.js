@@ -1,5 +1,11 @@
 import * as React from "react";
-import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  View,
+  Linking,
+} from "react-native";
 import {
   Button,
   DataTable,
@@ -7,6 +13,7 @@ import {
   List,
   Modal,
   Portal,
+  Snackbar,
   Surface,
   Text,
   Title,
@@ -33,7 +40,7 @@ export default function ProductDetails() {
   const [product, setProduct] = React.useState([]);
   const [youtube, setYoutube] = React.useState();
 
-  const [prodAttr, setProdAttr] = React.useState([]);
+  const [prodAttr, setProdAttr] = React.useState({});
   const [images, setImages] = React.useState([]);
   const [activeslide, setActiveslide] = React.useState(0);
 
@@ -55,15 +62,36 @@ export default function ProductDetails() {
     fetch(productURL)
       .then((response) => response.json())
       .then((json) => {
+        let attrItem = {};
         setProduct(json);
         if (json.images.length > 0) {
           setImages(json.images);
         }
         let ytId = json.meta_data.find((o) => o.key === "youtube_id");
         ytId.value ? setYoutube(ytId.value) : setYoutube();
+        if (json.weight) {
+          attrItem["weight"] = json.weight + " lbs";
+          setProdAttr((prevAttr) => {
+            return Object.assign(prevAttr, attrItem);
+          });
+        }
+        if (Object.keys(json.dimensions).length > 1) {
+          for (const [key, value] of Object.entries(json.dimensions)) {
+            if (!value) {
+              return;
+            }
+            attrItem[`${key}`] = value + " inch";
+            setProdAttr((prevAttr) => {
+              return Object.assign(prevAttr, attrItem);
+            });
+          }
+        }
         if (json.attributes.length > 1) {
           json.attributes.forEach((attr) => {
-            setProdAttr([...prodAttr, attr]);
+            attrItem[`${attr.name}`] = attr.options[0];
+            setProdAttr((prevAttr) => {
+              return Object.assign(prevAttr, attrItem);
+            });
           });
         }
       })
@@ -90,6 +118,43 @@ export default function ProductDetails() {
       />
     </Surface>
   );
+
+  const [errVisible, setErrVisible] = React.useState(false);
+  const [formOutput, setFormOutput] = React.useState("");
+  const onDismissSnackBar = () => setErrVisible(false);
+  const handleContactForm = (data) => {
+    setVisible(false);
+    setErrVisible(true);
+    setFormOutput(data.message);
+  };
+
+  const renderSpecs = () => {
+    if (prodAttr) {
+      for (const [key, value] of Object.entries(prodAttr)) {
+        return (
+          <DataTable.Row>
+            <DataTable.Cell>{key}</DataTable.Cell>
+            <DataTable.Cell>{value}</DataTable.Cell>
+          </DataTable.Row>
+        );
+      }
+    }
+  };
+
+  const specData1 = Object.values(prodAttr).map((item, index) => (
+    <DataTable.Row key={index}>
+      <DataTable.Cell>{item}</DataTable.Cell>
+    </DataTable.Row>
+  ));
+
+  const specData = Object.entries(prodAttr).map((item, index) => (
+    <DataTable.Row key={index}>
+      <DataTable.Cell>
+        {item[0].charAt(0).toUpperCase() + item[0].slice(1)}
+      </DataTable.Cell>
+      <DataTable.Cell>{item[1]}</DataTable.Cell>
+    </DataTable.Row>
+  ));
 
   return (
     <View
@@ -190,29 +255,28 @@ export default function ProductDetails() {
             <View style={styles.prodInner}>
               <List.Section style={styles.section}>
                 {product.description ? (
-                  <>
-                    <List.Accordion
-                      style={{
-                        backgroundColor: colors.surface,
-                        ...styles.accordion,
-                      }}
-                      title="Product Details"
-                      left={(props) => (
-                        <AntDesign
-                          {...props}
-                          style={{ transform: [{ rotateY: "180deg" }] }}
-                          name="notification"
-                          size={24}
-                        />
-                      )}
-                      id="1"
-                    >
-                      <WebView
-                        style={styles.contentView}
-                        scrollEnabled={true}
-                        originWhitelist={["*"]}
-                        source={{
-                          html: `<head>
+                  <List.Accordion
+                    style={{
+                      backgroundColor: colors.surface,
+                      ...styles.accordion,
+                    }}
+                    title="Product Details"
+                    left={(props) => (
+                      <AntDesign
+                        {...props}
+                        style={{ transform: [{ rotateY: "180deg" }] }}
+                        name="notification"
+                        size={24}
+                      />
+                    )}
+                    id="1"
+                  >
+                    <WebView
+                      style={styles.contentView}
+                      scrollEnabled={true}
+                      originWhitelist={["*"]}
+                      source={{
+                        html: `<head>
                           <meta name="viewport" content="width=device-width, initial-scale=1">
                             <style>
                               body {
@@ -233,37 +297,25 @@ export default function ProductDetails() {
                             ${product.description.replace(/&nbsp;/g, "")}
                           </body>
                           </html>`,
-                        }}
-                      />
-                    </List.Accordion>
-                    <Divider style={{ backgroundColor: colors.primary }} />
-                  </>
+                      }}
+                    />
+                  </List.Accordion>
                 ) : null}
-                <List.Accordion
-                  style={{
-                    backgroundColor: colors.surface,
-                    ...styles.accordion,
-                  }}
-                  title="Specifications"
-                  id="2"
-                >
-                  <DataTable.Row>
-                    <DataTable.Cell>Weight</DataTable.Cell>
-                    <DataTable.Cell>150</DataTable.Cell>
-                  </DataTable.Row>
-                  <DataTable.Row>
-                    <DataTable.Cell>Width</DataTable.Cell>
-                    <DataTable.Cell>250</DataTable.Cell>
-                  </DataTable.Row>
-                  <DataTable.Row>
-                    <DataTable.Cell>Length</DataTable.Cell>
-                    <DataTable.Cell>215</DataTable.Cell>
-                  </DataTable.Row>
-                  <DataTable.Row>
-                    <DataTable.Cell>Height</DataTable.Cell>
-                    <DataTable.Cell>340</DataTable.Cell>
-                  </DataTable.Row>
-                </List.Accordion>
+                {Object.keys(prodAttr).length > 1 && (
+                  <>
+                    <Divider style={{ backgroundColor: colors.primary }} />
+                    <List.Accordion
+                      style={{
+                        backgroundColor: colors.surface,
+                        ...styles.accordion,
+                      }}
+                      title="Specifications"
+                      id="2"
+                    >
+                      {specData}
+                    </List.Accordion>
+                  </>
+                )}
               </List.Section>
             </View>
             <View style={styles.prodCtas}>
@@ -302,11 +354,21 @@ export default function ProductDetails() {
                 sequi ullam non ratione, maiores cumque sapiente?
               </Text>
               <View style={styles.prodBottombtns}>
-                <Button style={styles.singleCol} mode="outlined" icon="phone">
+                <Button
+                  style={styles.singleCol}
+                  mode="outlined"
+                  icon="phone"
+                  onPress={() => Linking.openURL("tel://+16045562225")}
+                >
                   Call
                 </Button>
-                <Button style={styles.singleCol} mode="outlined" icon="email">
-                  Email
+                <Button
+                  style={styles.singleCol}
+                  mode="outlined"
+                  icon="email"
+                  onPress={() => Linking.openURL("sms://+16045562225")}
+                >
+                  SMS
                 </Button>
               </View>
             </View>
@@ -320,7 +382,12 @@ export default function ProductDetails() {
                 }}
               >
                 <ScrollView>
-                  <ContactForm title={formTitle} />
+                  <ContactForm
+                    onFormSubmit={handleContactForm}
+                    title={formTitle}
+                    lookingfor={product.sku}
+                    productCode={product.sku}
+                  />
                 </ScrollView>
                 <Button
                   style={styles.modalClose}
@@ -362,6 +429,16 @@ export default function ProductDetails() {
           </ScrollView>
         )
       )}
+
+      <Snackbar
+        visible={errVisible}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: "Close",
+        }}
+      >
+        {formOutput}
+      </Snackbar>
     </View>
   );
 }

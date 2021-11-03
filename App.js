@@ -5,7 +5,7 @@ import {
   DefaultTheme as PaperDefaultTheme,
   Provider as PaperProvider,
 } from "react-native-paper";
-import { useColorScheme } from "react-native";
+import { Linking, useColorScheme } from "react-native";
 import {
   NavigationContainer,
   DarkTheme as NavigationDarkTheme,
@@ -86,7 +86,12 @@ export default function App() {
                 options={{
                   title: "",
                   headerRight: () => (
-                    <Button icon="phone" uppercase={false}>
+                    <Button
+                      icon="phone"
+                      uppercase={false}
+                      labelStyle={{ fontWeight: "700" }}
+                      onPress={() => Linking.openURL("tel://+16045562225")}
+                    >
                       Call Us
                     </Button>
                   ),
