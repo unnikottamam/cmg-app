@@ -68,7 +68,7 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   const scheme = useColorScheme();
-  const theme = scheme === "dark" ? CombinedDarkTheme : CombinedDefaultTheme;
+  const theme = scheme !== "dark" ? CombinedDefaultTheme : CombinedDarkTheme;
 
   return (
     <Provider store={store}>
@@ -102,6 +102,7 @@ export default function App() {
                 name="CatDetails"
                 options={({ route }) => ({
                   title: route.params.title
+                    .replace(/machines/gi, "")
                     .replace(/used/gi, "")
                     .replace(/&amp;/g, "&")
                     .replace(/ and /gi, " & "),

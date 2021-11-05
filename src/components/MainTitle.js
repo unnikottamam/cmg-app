@@ -10,7 +10,7 @@ export default function MainTitle({ title, hasButton, noPaddingTop }) {
   return (
     <View
       style={{
-        paddingTop: noPaddingTop ? 10 : 20,
+        paddingTop: noPaddingTop ? 0 : 20,
         ...styles.titleView,
       }}
     >

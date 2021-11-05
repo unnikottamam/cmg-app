@@ -27,6 +27,8 @@ import { WebView } from "@haskkor/react-native-recaptchav3/node_modules/react-na
 import AntDesign from "react-native-vector-icons/AntDesign";
 import ContactForm from "./ContactForm";
 import { useRoute } from "@react-navigation/native";
+import { v4 as uuidv4 } from "uuid";
+import { WEB_URL } from "../config";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -55,7 +57,7 @@ export default function ProductDetails() {
   const showVideoModal = () => setVideoVisible(true);
   const hideVideoModal = () => setVideoVisible(false);
 
-  const productURL = `https://coastmachinery.com/wp-json/wc/v3/products/${prodId}/?consumer_key=ck_7715caa12e093d9ab75cb9bbd4299610e53b34d5&consumer_secret=cs_4ee97b04bd222fd83bf6eaccb719ff58d24dcf68`;
+  const productURL = `${WEB_URL}/wp-json/wc/v3/products/${prodId}/?consumer_key=ck_7715caa12e093d9ab75cb9bbd4299610e53b34d5&consumer_secret=cs_4ee97b04bd222fd83bf6eaccb719ff58d24dcf68`;
 
   const carouselRef = React.useRef(null);
   React.useEffect(() => {
@@ -68,7 +70,11 @@ export default function ProductDetails() {
           setImages(json.images);
         }
         let ytId = json.meta_data.find((o) => o.key === "youtube_id");
-        ytId.value ? setYoutube(ytId.value) : setYoutube();
+        if (ytId) {
+          ytId.value ? setYoutube(ytId.value) : setYoutube();
+        } else {
+          setYoutube();
+        }
         if (json.weight) {
           attrItem["weight"] = json.weight + " lbs";
           setProdAttr((prevAttr) => {
@@ -127,34 +133,6 @@ export default function ProductDetails() {
     setErrVisible(true);
     setFormOutput(data.message);
   };
-
-  const renderSpecs = () => {
-    if (prodAttr) {
-      for (const [key, value] of Object.entries(prodAttr)) {
-        return (
-          <DataTable.Row>
-            <DataTable.Cell>{key}</DataTable.Cell>
-            <DataTable.Cell>{value}</DataTable.Cell>
-          </DataTable.Row>
-        );
-      }
-    }
-  };
-
-  const specData1 = Object.values(prodAttr).map((item, index) => (
-    <DataTable.Row key={index}>
-      <DataTable.Cell>{item}</DataTable.Cell>
-    </DataTable.Row>
-  ));
-
-  const specData = Object.entries(prodAttr).map((item, index) => (
-    <DataTable.Row key={index}>
-      <DataTable.Cell>
-        {item[0].charAt(0).toUpperCase() + item[0].slice(1)}
-      </DataTable.Cell>
-      <DataTable.Cell>{item[1]}</DataTable.Cell>
-    </DataTable.Row>
-  ));
 
   return (
     <View
@@ -312,7 +290,14 @@ export default function ProductDetails() {
                       title="Specifications"
                       id="2"
                     >
-                      {specData}
+                      {Object.entries(prodAttr).map((item, index) => (
+                        <DataTable.Row key={uuidv4()}>
+                          <DataTable.Cell>
+                            {item[0].charAt(0).toUpperCase() + item[0].slice(1)}
+                          </DataTable.Cell>
+                          <DataTable.Cell>{item[1]}</DataTable.Cell>
+                        </DataTable.Row>
+                      ))}
                     </List.Accordion>
                   </>
                 )}
@@ -425,20 +410,19 @@ export default function ProductDetails() {
                   />
                 </Modal>
               )}
+              <Snackbar
+                visible={errVisible}
+                onDismiss={onDismissSnackBar}
+                action={{
+                  label: "Close",
+                }}
+              >
+                {formOutput}
+              </Snackbar>
             </Portal>
           </ScrollView>
         )
       )}
-
-      <Snackbar
-        visible={errVisible}
-        onDismiss={onDismissSnackBar}
-        action={{
-          label: "Close",
-        }}
-      >
-        {formOutput}
-      </Snackbar>
     </View>
   );
 }

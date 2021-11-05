@@ -1,27 +1,31 @@
 import * as React from "react";
-import { FlatList, View } from "react-native";
-import { Button, Text } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
+import { ScrollView } from "react-native";
+import { List } from "react-native-paper";
+import { useNavigation, useTheme } from "@react-navigation/native";
+import { v4 as uuidv4 } from "uuid";
+import ContentLoader, { Rect, Circle } from "react-content-loader/native";
+
+const MyLoader = (props) => (
+  <ContentLoader
+    speed={1.5}
+    width={320}
+    height={45}
+    viewBox="0 0 320 45"
+    backgroundColor="#ccc"
+    foregroundColor="#ecebeb"
+    {...props}
+  >
+    <Circle x="25" y="5" cx="10" cy="20" r="8" />
+    <Rect x="65" y="20" rx="5" ry="5" width="220" height="10" />
+  </ContentLoader>
+);
 
 export default function CatList() {
+  const { colors } = useTheme();
   const navigation = useNavigation();
   const [data, setData] = React.useState([]);
   const [isLoading, setLoading] = React.useState(true);
-
-  const renderItem = ({ item }) => (
-    <Button
-      onPress={() =>
-        navigation.navigate("CatDetails", {
-          title: item.name,
-        })
-      }
-      mode="outlined"
-    >
-      {item.name.replace(/&amp;/g, "&")}
-    </Button>
-  );
-
-  const catList = `https://coastmachinery.com/wp-json/wc/v2/products/categories?per_page=90&exclude=15hide_empty=true&orderby=term_group&consumer_key=ck_7715caa12e093d9ab75cb9bbd4299610e53b34d5&consumer_secret=cs_4ee97b04bd222fd83bf6eaccb719ff58d24dcf68`;
+  const catList = `https://coastmachinery.com/wp-json/wp/v3/cats/`;
 
   React.useEffect(() => {
     fetch(catList)
@@ -36,16 +40,72 @@ export default function CatList() {
   }, []);
 
   return (
-    <View>
+    <ScrollView>
       {isLoading ? (
-        <Text>Loading...</Text>
+        <>
+          <MyLoader />
+          <MyLoader />
+          <MyLoader />
+          <MyLoader />
+          <MyLoader />
+        </>
       ) : (
-        <FlatList
-          data={data}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-        />
+        <>
+          <List.Section>
+            {data
+              .reverse()
+              .filter((item) => item.parent == 0)
+              .map((cat) => (
+                <List.Accordion
+                  key={uuidv4()}
+                  title={cat.title
+                    .replace(/machines/gi, "")
+                    .replace(/used/gi, "")
+                    .replace(/&amp;/g, "&")
+                    .replace(/ and /gi, " & ")
+                    .trim()}
+                  left={(props) => (
+                    <List.Icon
+                      {...props}
+                      color={colors.accent}
+                      icon="checkbox-multiple-marked-circle-outline"
+                    />
+                  )}
+                  style={{
+                    borderBottomWidth: 1,
+                    borderColor: colors.primary,
+                    paddingVertical: 0,
+                  }}
+                  titleStyle={{
+                    fontWeight: "500",
+                    letterSpacing: 0.25,
+                  }}
+                >
+                  {data
+                    .filter((item) => item.parent == cat.id)
+                    .reverse()
+                    .map((subcat) => (
+                      <List.Item
+                        key={uuidv4()}
+                        onPress={() =>
+                          navigation.navigate("CatDetails", {
+                            cat: subcat.id,
+                            title: subcat.title,
+                          })
+                        }
+                        title={subcat.title
+                          .replace(/machines/gi, "")
+                          .replace(/used/gi, "")
+                          .replace(/&amp;/g, "&")
+                          .replace(/ and /gi, " & ")
+                          .trim()}
+                      />
+                    ))}
+                </List.Accordion>
+              ))}
+          </List.Section>
+        </>
       )}
-    </View>
+    </ScrollView>
   );
 }

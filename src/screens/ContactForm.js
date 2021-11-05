@@ -26,7 +26,6 @@ export default function ContactForm({
   lookingfor,
   onFormSubmit,
 }) {
-  let product_code = productCode ? productCode : null;
   const shipping = title.match(/shipping/i) ? true : false;
   const offer = title.match(/offer/i) ? true : false;
   const schema = yup
@@ -65,7 +64,15 @@ export default function ContactForm({
   }, [register]);
 
   const onSubmit = async (data) => {
-    let formData = `lookingfor=${lookingfor}&source=Mobile-App&product_code=${product_code}&captcha_res=${data.recaptcha}&full_name=${data.full_name}&email_id=${data.email_id}&contact_no=${data.phone_number}&message=${data.message}&offer_price=${data.offer_price}&country=${data.country}&zipcode=${data.zip_code}`;
+    let formData = `lookingfor=${lookingfor}&source=Mobile-App&product_code=${
+      productCode ? productCode : ""
+    }&captcha_res=${data.recaptcha}&full_name=${data.full_name}&email_id=${
+      data.email_id
+    }&contact_no=${data.phone_number ? data.phone_number : ""}&message=${
+      data.message ? data.message : ""
+    }&offer_price=${data.offer_price ? data.offer_price : ""}&country=${
+      data.country ? data.country : ""
+    }&zipcode=${data.zip_code ? data.zip_code : ""}`;
     const response = await axios.post(
       `https://stag.coastmachinery.com/wp-content/themes/coast-machinery/inc/form-action.php`,
       formData

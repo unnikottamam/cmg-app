@@ -1,8 +1,9 @@
 import * as React from "react";
-import { Alert, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import {
   Button,
   HelperText,
+  Portal,
   Snackbar,
   TextInput,
   Title,
@@ -28,7 +29,7 @@ export default function Login() {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { isSubmitting, errors },
   } = useForm({
     resolver: yupResolver(schema),
   });
@@ -36,13 +37,17 @@ export default function Login() {
   const [errVisible, setErrVisible] = React.useState(false);
   const onDismissSnackBar = () => setErrVisible(false);
   const dispatch = useDispatch();
+
   const onSubmit = async (data) => {
-    try {
-      dispatch(authActions.login(data));
-      setErrVisible(false);
-    } catch (err) {
-      setErrVisible(true);
-    }
+    const response = await dispatch(authActions.login(data));
+    console.log(response);
+
+    // try {
+    //   dispatch(authActions.login(data));
+    //   setErrVisible(false);
+    // } catch (err) {
+    //   setErrVisible(true);
+    // }
   };
 
   return (
@@ -101,7 +106,6 @@ export default function Login() {
       )}
       <Button
         mode="outlined"
-        color={colors.primary}
         icon={() => <AntDesign name="login" color={colors.primary} size={18} />}
         style={{
           backgroundColor: colors.accentShadow,
@@ -112,18 +116,21 @@ export default function Login() {
         contentStyle={styles.buttonContent}
         labelStyle={styles.buttonLbl}
         onPress={handleSubmit(onSubmit)}
+        disabled={isSubmitting}
       >
         Login
       </Button>
-      <Snackbar
-        visible={errVisible}
-        onDismiss={onDismissSnackBar}
-        action={{
-          label: "Close",
-        }}
-      >
-        Login Failed.
-      </Snackbar>
+      <Portal>
+        <Snackbar
+          visible={errVisible}
+          onDismiss={onDismissSnackBar}
+          action={{
+            label: "Close",
+          }}
+        >
+          Login Failed.
+        </Snackbar>
+      </Portal>
     </ScrollView>
   );
 }

@@ -1,25 +1,23 @@
 import * as React from "react";
 import { Button, useTheme } from "react-native-paper";
 import { FlatList, StyleSheet } from "react-native";
-import Item from "./Item";
 import MainTitle from "../components/MainTitle";
 import { useNavigation } from "@react-navigation/native";
+import { v4 as uuidv4 } from "uuid";
+import { WEB_URL } from "../config";
+import ProductWrap from "./ProductWrap";
 
-export default function ProductList({ title, cat, horizontal }) {
+const renderItem = ({ item }) => (
+  <ProductWrap product={item} horizontal={true} />
+);
+
+export default function ProductList({ title, cat }) {
   const navigation = useNavigation();
   const { colors } = useTheme();
   const [isLoading, setLoading] = React.useState(true);
   const [data, setData] = React.useState([]);
   const category = cat ? `&category=${cat}` : "";
 
-  const renderItem = ({ item }) => (
-    <Item
-      product={item}
-      horizontal={horizontal}
-      navigation={navigation}
-      colors={colors}
-    />
-  );
   const footerComponent = isLoading ? null : (
     <Button
       color={colors.primary}
@@ -30,11 +28,7 @@ export default function ProductList({ title, cat, horizontal }) {
         ...styles.gridFooterCont,
       }}
       mode="outlined"
-      onPress={() =>
-        navigation.navigate("CatDetails", {
-          title: title,
-        })
-      }
+      onPress={() => navigation.navigate("Categories")}
     >
       See All
     </Button>
@@ -42,7 +36,7 @@ export default function ProductList({ title, cat, horizontal }) {
 
   React.useEffect(() => {
     fetch(
-      `https://coastmachinery.com/wp-json/wc/v2/products?in_stock=true&page=1&per_page=8&status=publish&consumer_key=ck_7715caa12e093d9ab75cb9bbd4299610e53b34d5&consumer_secret=cs_4ee97b04bd222fd83bf6eaccb719ff58d24dcf68${category}`
+      `${WEB_URL}/wp-json/wc/v2/products?in_stock=true&page=1&per_page=8&status=publish&consumer_key=ck_7715caa12e093d9ab75cb9bbd4299610e53b34d5&consumer_secret=cs_4ee97b04bd222fd83bf6eaccb719ff58d24dcf68${category}`
     )
       .then((response) => response.json())
       .then((json) => {
@@ -58,8 +52,8 @@ export default function ProductList({ title, cat, horizontal }) {
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={(data) => data.sku}
-        horizontal={horizontal}
+        keyExtractor={() => uuidv4()}
+        horizontal={true}
         showsHorizontalScrollIndicator={false}
         ListFooterComponent={footerComponent}
         initialNumToRender={2}
