@@ -111,9 +111,9 @@ export default function App() {
               />
               <Stack.Screen
                 name="Register"
-                options={{
+                options={() => ({
                   title: "Vendor Registration",
-                }}
+                })}
                 component={Register}
               />
             </Stack.Navigator>
