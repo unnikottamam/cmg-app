@@ -14,11 +14,11 @@ import {
   useTheme,
 } from "react-native-paper";
 import RNPickerSelect from "react-native-picker-select";
-import ReCaptchaV3 from "@haskkor/react-native-recaptchav3";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { CAPTCHA_KEY, WEB_URL } from "../config";
 import axios from "axios";
+import ReCaptchaComponent from "../components/ReCaptchaComponent";
 
 export default function ContactForm({
   title,
@@ -289,7 +289,7 @@ export default function ContactForm({
         {errors.message && (
           <HelperText type="error">Message is required</HelperText>
         )}
-        <ReCaptchaV3
+        <ReCaptchaComponent
           captchaDomain={WEB_URL}
           siteKey={CAPTCHA_KEY}
           onReceiveToken={(token) =>

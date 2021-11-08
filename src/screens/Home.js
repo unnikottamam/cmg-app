@@ -227,7 +227,8 @@ export default function Home() {
                 <Button
                   mode="outlined"
                   style={{
-                    borderColor: colors.primaryShadow,
+                    backgroundColor: colors.surface,
+                    borderColor: colors.primary,
                     ...styles.topCatContact,
                   }}
                   labelStyle={styles.topCatbtnLbl}
@@ -239,7 +240,8 @@ export default function Home() {
                 <Button
                   mode="outlined"
                   style={{
-                    borderColor: colors.primaryShadow,
+                    backgroundColor: colors.surface,
+                    borderColor: colors.primary,
                     ...styles.topCatPhone,
                   }}
                   labelStyle={styles.topCatbtnLbl}

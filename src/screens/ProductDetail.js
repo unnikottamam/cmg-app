@@ -23,7 +23,7 @@ import Carousel, {
   ParallaxImage,
   Pagination,
 } from "react-native-snap-carousel";
-import { WebView } from "@haskkor/react-native-recaptchav3/node_modules/react-native-webview";
+import { WebView } from "react-native-webview";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import ContactForm from "./ContactForm";
 import { useRoute } from "@react-navigation/native";

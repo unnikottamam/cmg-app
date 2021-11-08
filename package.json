@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@expo/ngrok": "^4.1.0",
-    "@haskkor/react-native-recaptchav3": "^1.2.1",
     "@hookform/resolvers": "^2.8.2",
     "@react-native-async-storage/async-storage": "~1.15.0",
     "@react-navigation/bottom-tabs": "^6.0.7",
@@ -24,6 +23,7 @@
     "expo-image-picker": "~10.2.2",
     "expo-linking": "~2.3.1",
     "expo-status-bar": "~1.0.4",
+    "expo-web-browser": "~9.2.0",
     "googleapis": "^89.0.0",
     "react": "16.13.1",
     "react-content-loader": "^6.0.3",
@@ -42,14 +42,13 @@
     "react-native-snap-carousel": "^3.9.1",
     "react-native-svg": "^12.1.1",
     "react-native-tab-view": "^3.1.1",
-    "react-native-webview": "^11.14.1",
     "react-redux": "^7.2.6",
     "redux": "^4.1.1",
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.4.0",
     "uuid": "^8.3.2",
     "yup": "^0.32.11",
-    "expo-web-browser": "~9.2.0"
+    "react-native-webview": "11.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0"

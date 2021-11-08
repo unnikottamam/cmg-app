@@ -4,6 +4,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  View,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -11,18 +12,20 @@ import {
   Checkbox,
   Divider,
   HelperText,
+  Portal,
   Snackbar,
   TextInput,
   Title,
   useTheme,
 } from "react-native-paper";
 import RNPickerSelect from "react-native-picker-select";
-import ReCaptchaV3 from "@haskkor/react-native-recaptchav3";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import ReCaptchaComponent from "../components/ReCaptchaComponent";
 import { CAPTCHA_KEY, WEB_URL } from "../config";
+import { WebView } from "react-native-webview";
 
-export default function Register() {
+export default function Register({ onFormSubmit }) {
   const { colors } = useTheme();
   const [checked, setChecked] = React.useState(true);
   const [userCountry, setUserCountry] = React.useState();
@@ -321,8 +324,45 @@ export default function Register() {
     register("recaptcha", { required: true });
     register("terms", { required: true });
   }, [register]);
+
   const onSubmit = async (data) => {
-    console.log(data);
+    let formData = `captcha_res=${data.recaptcha}&first_name=${
+      data.first_name
+    }&last_name=${data.last_name}&shop_name=${data.shop_name}&username=${
+      data.username
+    }&email_id=${data.email_id}&password=${data.password}&cellnumber=${
+      data.cellnumber
+    }&message=${data.message ? data.message : ""}&street=${
+      data.street ? data.street : ""
+    }&city=${data.city ? data.city : ""}&country=${data.country}&state=${
+      data.state
+    }&zipcode=${data.zipcode}`;
+    const response = await axios.post(
+      `https://stag.coastmachinery.com/wp-content/themes/coast-machinery/inc/form-signup.php`,
+      formData
+    );
+    if (response.data) {
+      if (response.data.status == "success") {
+        reset({
+          first_name: "",
+          last_name: "",
+          shop_name: "",
+          username: "",
+          email_id: "",
+          password: "",
+          cellnumber: "",
+          message: "",
+          street: "",
+          city: "",
+          country: "",
+          state: "",
+          zipcode: "",
+        });
+      } else {
+        console.log(response.data);
+      }
+      onFormSubmit(response.data);
+    }
   };
 
   const onError = () => {
@@ -640,12 +680,12 @@ export default function Register() {
             Please Agree our Terms & Conditions.
           </HelperText>
         )}
-        <ReCaptchaV3
-          captchaDomain={WEB_URL}
-          siteKey={CAPTCHA_KEY}
-          onReceiveToken={(token) =>
-            setValue("recaptcha", token, { shouldValidate: true })
-          }
+        <WebView
+          style={{
+            height: 160,
+          }}
+          originWhitelist={["*"]}
+          source={{ html: "<h1><center>Hello world</center></h1>" }}
         />
         <Button
           icon="plus"
@@ -658,15 +698,17 @@ export default function Register() {
           Sign Up
         </Button>
       </ScrollView>
-      <Snackbar
-        visible={errVisible}
-        onDismiss={onDismissSnackBar}
-        action={{
-          label: "Close",
-        }}
-      >
-        Some fields are required
-      </Snackbar>
+      <Portal>
+        <Snackbar
+          visible={errVisible}
+          onDismiss={onDismissSnackBar}
+          action={{
+            label: "Close",
+          }}
+        >
+          Please fill all required fields.
+        </Snackbar>
+      </Portal>
     </KeyboardAvoidingView>
   );
 }
