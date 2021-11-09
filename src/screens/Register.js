@@ -23,7 +23,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import ReCaptchaComponent from "../components/ReCaptchaComponent";
 import { CAPTCHA_KEY, WEB_URL } from "../config";
-import { WebView } from "react-native-webview";
+import axios from "axios";
 
 export default function Register({ onFormSubmit }) {
   const { colors } = useTheme();
@@ -297,7 +297,7 @@ export default function Register({ onFormSubmit }) {
       last_name: yup.string().required(),
       shop_name: yup.string().required(),
       username: yup.string().required(),
-      password: yup.string().required(),
+      password: yup.string().required().min(5),
       email_id: yup.string().email().required(),
       cellnumber: yup.string().required(),
       country: yup.string().required(),
@@ -315,6 +315,7 @@ export default function Register({ onFormSubmit }) {
     register,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -341,27 +342,27 @@ export default function Register({ onFormSubmit }) {
       `https://stag.coastmachinery.com/wp-content/themes/coast-machinery/inc/form-signup.php`,
       formData
     );
-    if (response.data) {
-      if (response.data.status == "success") {
-        reset({
-          first_name: "",
-          last_name: "",
-          shop_name: "",
-          username: "",
-          email_id: "",
-          password: "",
-          cellnumber: "",
-          message: "",
-          street: "",
-          city: "",
-          country: "",
-          state: "",
-          zipcode: "",
-        });
-      } else {
-        console.log(response.data);
+    const resData = await response.data;
+    if (resData) {
+      if (resData.status !== "success") {
+        return console.log(resData);
       }
-      onFormSubmit(response.data);
+      reset({
+        first_name: "",
+        last_name: "",
+        shop_name: "",
+        username: "",
+        email_id: "",
+        password: "",
+        cellnumber: "",
+        message: "",
+        street: "",
+        city: "",
+        country: "",
+        state: "",
+        zipcode: "",
+      });
+      onFormSubmit(resData);
     }
   };
 
@@ -396,7 +397,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="first_name"
-          defaultValue=""
+          defaultValue="Tester"
         />
         {errors.first_name && (
           <HelperText type="error">First name is required.</HelperText>
@@ -419,7 +420,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="last_name"
-          defaultValue=""
+          defaultValue="Tester"
         />
         {errors.last_name && (
           <HelperText type="error">Last name is required.</HelperText>
@@ -442,7 +443,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="shop_name"
-          defaultValue=""
+          defaultValue="Tester"
         />
         {errors.shop_name && (
           <HelperText type="error">Shop / Vendor name is required.</HelperText>
@@ -466,7 +467,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="email_id"
-          defaultValue=""
+          defaultValue="test@test.com"
         />
         {errors.email_id && (
           <HelperText type="error">Email Address is required.</HelperText>
@@ -489,7 +490,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="username"
-          defaultValue=""
+          defaultValue="testers"
         />
         {errors.username && (
           <HelperText type="error">Username is required.</HelperText>
@@ -514,10 +515,12 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="password"
-          defaultValue=""
+          defaultValue="12345"
         />
         {errors.password && (
-          <HelperText type="error">Password is required.</HelperText>
+          <HelperText type="error">
+            Password is required & atleast 5 characters.
+          </HelperText>
         )}
 
         <Divider style={styles.divider} />
@@ -542,7 +545,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="cellnumber"
-          defaultValue=""
+          defaultValue="123456"
         />
         {errors.cellnumber && (
           <HelperText type="error">Cell Number is required.</HelperText>
@@ -575,7 +578,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="country"
-          defaultValue=""
+          defaultValue="CA"
         />
         {errors.country && (
           <HelperText type="error">Country is required</HelperText>
@@ -604,7 +607,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="state"
-          defaultValue=""
+          defaultValue="BC"
         />
         {errors.state && (
           <HelperText type="error">State/Province is required</HelperText>
@@ -661,7 +664,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="zipcode"
-          defaultValue=""
+          defaultValue="V4X0A4"
         />
         {errors.zipcode && (
           <HelperText type="error">Postal / Zip Code is required.</HelperText>
@@ -680,12 +683,12 @@ export default function Register({ onFormSubmit }) {
             Please Agree our Terms & Conditions.
           </HelperText>
         )}
-        <WebView
-          style={{
-            height: 160,
-          }}
-          originWhitelist={["*"]}
-          source={{ html: "<h1><center>Hello world</center></h1>" }}
+        <ReCaptchaComponent
+          captchaDomain={WEB_URL}
+          siteKey={CAPTCHA_KEY}
+          onReceiveToken={(token) =>
+            setValue("recaptcha", token, { shouldValidate: true })
+          }
         />
         <Button
           icon="plus"

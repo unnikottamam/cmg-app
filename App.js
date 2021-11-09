@@ -112,6 +112,7 @@ export default function App() {
               <Stack.Screen
                 name="Register"
                 options={() => ({
+                  animation: "none",
                   title: "Vendor Registration",
                 })}
                 component={Register}

@@ -13,9 +13,21 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { useDispatch } from "react-redux";
-import * as authActions from "../store/actions/auth";
 import { ScrollView } from "react-native-gesture-handler";
+import * as SecureStore from "expo-secure-store";
+
+async function save(key, value) {
+  await SecureStore.setItemAsync(key, value);
+}
+
+async function getValueFor(key) {
+  let result = await SecureStore.getItemAsync(key);
+  if (result) {
+    console.log(result);
+  } else {
+    console.log("none");
+  }
+}
 
 export default function Login() {
   const { colors } = useTheme();
@@ -36,18 +48,39 @@ export default function Login() {
 
   const [errVisible, setErrVisible] = React.useState(false);
   const onDismissSnackBar = () => setErrVisible(false);
-  const dispatch = useDispatch();
+
+  getValueFor("password");
 
   const onSubmit = async (data) => {
-    const response = await dispatch(authActions.login(data));
-    console.log(response);
+    const response = await fetch(
+      "https://stag.coastmachinery.com/wp-json/jwt-auth/v1/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: data.username,
+          password: data.password,
+        }),
+      }
+    );
 
-    // try {
-    //   dispatch(authActions.login(data));
-    //   setErrVisible(false);
-    // } catch (err) {
-    //   setErrVisible(true);
-    // }
+    if (!response.ok) {
+      console.log("error");
+    }
+
+    const resData = await response.json();
+
+    if (resData.roles !== "vendor") {
+      console.log("not vendor");
+    }
+
+    save("userid", resData.userid.toString());
+    save("userrole", resData.roles);
+    save("username", resData.user_display_name);
+    save("username", data.username);
+    save("password", data.password.toString(0));
   };
 
   return (

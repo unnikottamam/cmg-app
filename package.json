@@ -48,7 +48,8 @@
     "redux-thunk": "^2.4.0",
     "uuid": "^8.3.2",
     "yup": "^0.32.11",
-    "react-native-webview": "11.6.2"
+    "react-native-webview": "11.6.2",
+    "expo-secure-store": "~10.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0"
