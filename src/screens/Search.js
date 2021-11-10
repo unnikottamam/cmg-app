@@ -14,7 +14,7 @@ import Item from "./Item";
 import { useNavigation } from "@react-navigation/native";
 import ContentLoader, { Rect } from "react-content-loader/native";
 import { v4 as uuidv4 } from "uuid";
-import { WEB_URL } from "../config";
+import { WEB_URL, WOO_KEY, WOO_SECRET } from "../config";
 
 const MyLoader = (props) => (
   <ContentLoader
@@ -62,7 +62,7 @@ export default function Search() {
     () => setSearchShouldFetch(true),
     []
   );
-  let fetchURL = `${WEB_URL}/wp-json/wc/v2/products?in_stock=true&per_page=7&status=publish&consumer_key=ck_7715caa12e093d9ab75cb9bbd4299610e53b34d5&consumer_secret=cs_4ee97b04bd222fd83bf6eaccb719ff58d24dcf68`;
+  let fetchURL = `${WEB_URL}/wp-json/wc/v2/products?in_stock=true&per_page=7&status=publish&consumer_key=${WOO_KEY}&consumer_secret=${WOO_SECRET}`;
 
   React.useEffect(() => {
     if (!shouldFetch || page > 3) {

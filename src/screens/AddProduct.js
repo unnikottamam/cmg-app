@@ -27,6 +27,8 @@ import { Video } from "expo-av";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
+import { WEB_URL, WOO_KEY, WOO_SECRET } from "../config";
 
 const { width: screenWidth } = Dimensions.get("window");
 export default function AddProduct() {
@@ -38,6 +40,7 @@ export default function AddProduct() {
   const [galleryImages, setGalleryImages] = React.useState([]);
   const [productVideo, setProductVideo] = React.useState(null);
   const video = React.useRef(null);
+
   const [errVisible, setErrVisible] = React.useState(false);
   const onDismissSnackBar = () => setErrVisible(false);
 
@@ -122,9 +125,143 @@ export default function AddProduct() {
     }
   };
 
-  const onSubmit = (data) => {
-    console.log(data);
-    navigation.navigate("Products", { productAdded: true, id: 361 });
+  const onSubmit = async (data) => {
+    let dimensions = {
+      length: data.length ? data.length : "",
+      width: data.width ? data.width : "",
+      height: data.height ? data.height : "",
+    };
+
+    let attributes = [];
+    let attrCount = -1;
+
+    if (data.pa_amps) {
+      attributes.push({
+        id: 8,
+        position: ++attrCount,
+        visible: true,
+        variation: false,
+        options: [data.pa_amps.trim()],
+      });
+    }
+    if (data.pa_brand) {
+      attributes.push({
+        id: 1,
+        position: ++attrCount,
+        visible: true,
+        variation: false,
+        options: [data.pa_brand.trim()],
+      });
+    }
+    if (data.pa_hp) {
+      attributes.push({
+        id: 6,
+        position: ++attrCount,
+        visible: true,
+        variation: false,
+        options: [data.pa_hp.trim()],
+      });
+    }
+    if (data.pa_model) {
+      attributes.push({
+        id: 3,
+        position: ++attrCount,
+        visible: true,
+        variation: false,
+        options: [data.pa_model.trim()],
+      });
+    }
+    if (data.pa_phase) {
+      attributes.push({
+        id: 4,
+        position: ++attrCount,
+        visible: true,
+        variation: false,
+        options: [data.pa_phase.trim()],
+      });
+    }
+    if (data.pa_serialno) {
+      attributes.push({
+        id: 16,
+        position: ++attrCount,
+        visible: true,
+        variation: false,
+        options: [data.pa_serialno.trim()],
+      });
+    }
+    if (data.pa_voltage) {
+      attributes.push({
+        id: 5,
+        position: ++attrCount,
+        visible: true,
+        variation: false,
+        options: [data.pa_voltage.trim()],
+      });
+    }
+    if (data.pa_yearmfg) {
+      attributes.push({
+        id: 14,
+        position: ++attrCount,
+        visible: true,
+        variation: false,
+        options: [data.pa_yearmfg.trim()],
+      });
+    }
+
+    let formData = {
+      type: "simple",
+      name: data.name.trim(),
+      description: data.description.trim(),
+      categories: [
+        {
+          id: data.product_cat,
+        },
+      ],
+      regular_price: data.regular_price,
+      attributes: attributes,
+      dimensions: dimensions,
+      weight: data.weight,
+      meta_data: [
+        {
+          key: "product_city",
+          value: data.location,
+        },
+      ],
+    };
+    console.log(formData);
+    // const response = await axios.post(
+    //   `${WEB_URL}/wp-json/wc/v3/products?consumer_key=${WOO_KEY}&consumer_secret=${WOO_SECRET}`,
+    //   formData
+    // );
+    // const resData = await response.data;
+    // if (resData) {
+    //   if (resData.status !== "success") {
+    //     return console.log(resData);
+    //   }
+    //   reset({
+    //     name: "",
+    //     location: "",
+    //     product_cat: "",
+    //     regular_price: "",
+    //     description: "",
+    //     weight: "",
+    //     length: "",
+    //     width: "",
+    //     height: "",
+    //     pa_amps: "",
+    //     pa_brand: "",
+    //     pa_hp: "",
+    //     pa_model: "",
+    //     pa_phase: "",
+    //     pa_serialno: "",
+    //     pa_voltage: "",
+    //     pa_yearmfg: "",
+    //   });
+    //   setValue("featImg", "");
+    //   setValue("prodVideo", "");
+    //   setValue("galImages", "");
+    //   navigation.navigate("Products", { productAdded: true, id: 361 });
+    // }
   };
 
   const onError = () => {
@@ -154,10 +291,10 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="post_title"
+          name="name"
           defaultValue=""
         />
-        {errors.post_title && (
+        {errors.name && (
           <HelperText type="error">Product name is required.</HelperText>
         )}
 
@@ -174,7 +311,7 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="_wcv_custom_product_location"
+          name="location"
           defaultValue=""
         />
 
@@ -185,7 +322,7 @@ export default function AddProduct() {
           }}
           render={({ field: { onChange } }) => (
             <RNPickerSelect
-              placeholder={{ label: "Select a category", value: null }}
+              placeholder={{ label: "Select a category *", value: null }}
               textInputProps={{
                 style: {
                   borderColor: colors.inputColor,
@@ -198,15 +335,17 @@ export default function AddProduct() {
                 onChange(value);
               }}
               items={[
-                { label: "Woodworking", value: "woodworking" },
-                { label: "Metalworking", value: "metalworking" },
+                { label: "Woodworking", value: 361 },
+                { label: "Metalworking", value: 377 },
+                { label: "Stone & Glass", value: 380 },
+                { label: "Warehousing", value: 382 },
               ]}
             />
           )}
-          name="maincategory"
+          name="product_cat"
           defaultValue=""
         />
-        {errors.maincategory && (
+        {errors.product_cat && (
           <HelperText type="error">Select a category.</HelperText>
         )}
 
@@ -227,10 +366,10 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="_regular_price"
+          name="regular_price"
           defaultValue=""
         />
-        {errors._regular_price && (
+        {errors.regular_price && (
           <HelperText type="error">Selling price is required.</HelperText>
         )}
         <Text style={styles.smallText}>
@@ -250,7 +389,7 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="post_content"
+          name="description"
           defaultValue=""
         />
         <Text style={styles.smallText}>
@@ -272,7 +411,7 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="_weight"
+          name="weight"
           defaultValue=""
         />
         <Controller
@@ -289,7 +428,7 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="_length"
+          name="length"
           defaultValue=""
         />
         <Controller
@@ -306,7 +445,7 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="_width"
+          name="width"
           defaultValue=""
         />
         <Controller
@@ -323,7 +462,7 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="_height"
+          name="height"
           defaultValue=""
         />
         <Controller
@@ -419,7 +558,7 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="pa_serial-no"
+          name="pa_serialno"
           defaultValue=""
         />
         <Controller
@@ -452,7 +591,7 @@ export default function AddProduct() {
               returnKeyType="done"
             />
           )}
-          name="pa_year-mfg"
+          name="pa_yearmfg"
           defaultValue=""
         />
 

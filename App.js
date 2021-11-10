@@ -5,7 +5,7 @@ import {
   DefaultTheme as PaperDefaultTheme,
   Provider as PaperProvider,
 } from "react-native-paper";
-import { Linking, useColorScheme } from "react-native";
+import { Linking, Platform, useColorScheme } from "react-native";
 import {
   NavigationContainer,
   DarkTheme as NavigationDarkTheme,
@@ -18,10 +18,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import ProductDetails from "./src/screens/ProductDetail";
 import CatDetails from "./src/screens/CatDetails";
 import Register from "./src/screens/Register";
-import { Provider } from "react-redux";
-import { applyMiddleware, combineReducers, createStore } from "redux";
-import thunk from "redux-thunk";
-import authReducer from "./src/store/reducers/auth";
+
+const AuthContext = React.createContext();
 
 const CombinedDefaultTheme = {
   ...PaperDefaultTheme,
@@ -60,10 +58,6 @@ const CombinedDarkTheme = {
   },
 };
 
-const rootReducer = combineReducers({
-  auth: authReducer,
-});
-const store = createStore(rootReducer, applyMiddleware(thunk));
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -71,56 +65,54 @@ export default function App() {
   const theme = scheme !== "dark" ? CombinedDefaultTheme : CombinedDarkTheme;
 
   return (
-    <Provider store={store}>
-      <SafeAreaProvider>
-        <PaperProvider theme={theme}>
-          <NavigationContainer theme={theme} fallback={<Loading />}>
-            <Stack.Navigator>
-              <Stack.Screen
-                name="CMG"
-                component={HomeStackScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="ProductDetails"
-                options={{
-                  title: "",
-                  headerRight: () => (
-                    <Button
-                      icon="phone"
-                      uppercase={false}
-                      labelStyle={{ fontWeight: "700" }}
-                      onPress={() => Linking.openURL("tel://+16045562225")}
-                    >
-                      Call Us
-                    </Button>
-                  ),
-                }}
-                component={ProductDetails}
-              />
-              <Stack.Screen
-                name="CatDetails"
-                options={({ route }) => ({
-                  title: route.params.title
-                    .replace(/machines/gi, "")
-                    .replace(/used/gi, "")
-                    .replace(/&amp;/g, "&")
-                    .replace(/ and /gi, " & "),
-                })}
-                component={CatDetails}
-              />
-              <Stack.Screen
-                name="Register"
-                options={() => ({
-                  animation: "none",
-                  title: "Vendor Registration",
-                })}
-                component={Register}
-              />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </PaperProvider>
-      </SafeAreaProvider>
-    </Provider>
+    <SafeAreaProvider>
+      <PaperProvider theme={theme}>
+        <NavigationContainer theme={theme} fallback={<Loading />}>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="CMG"
+              component={HomeStackScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ProductDetails"
+              options={{
+                title: "",
+                headerRight: () => (
+                  <Button
+                    icon="phone"
+                    uppercase={false}
+                    labelStyle={{ fontWeight: "700" }}
+                    onPress={() => Linking.openURL("tel://+16045562225")}
+                  >
+                    Call Us
+                  </Button>
+                ),
+              }}
+              component={ProductDetails}
+            />
+            <Stack.Screen
+              name="CatDetails"
+              options={({ route }) => ({
+                title: route.params.title
+                  .replace(/machines/gi, "")
+                  .replace(/used/gi, "")
+                  .replace(/&amp;/g, "&")
+                  .replace(/ and /gi, " & "),
+              })}
+              component={CatDetails}
+            />
+            <Stack.Screen
+              name="Register"
+              options={() => ({
+                animation: Platform.OS === "ios" ? "default" : "none",
+                title: "Vendor Registration",
+              })}
+              component={Register}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }

@@ -2,7 +2,7 @@ import * as React from "react";
 import { FlatList, ScrollView } from "react-native";
 import ContentLoader, { Rect } from "react-content-loader/native";
 import { v4 as uuidv4 } from "uuid";
-import { WEB_URL } from "../config";
+import { WEB_URL, WOO_KEY, WOO_SECRET } from "../config";
 import ProductWrap from "./ProductWrap";
 
 const MyLoader = (props) => (
@@ -30,6 +30,7 @@ const MyLoader = (props) => (
 const renderItem = ({ item }) => <ProductWrap product={item} />;
 
 export default class CatScreen extends React.PureComponent {
+  _isMounted = false;
   constructor(props) {
     super(props);
     this.state = {
@@ -44,18 +45,21 @@ export default class CatScreen extends React.PureComponent {
     if (!this.state.isLoadingMore) {
       return;
     }
+    this._isMounted = true;
     const { route } = this.props;
     let category = "";
     if (route.params) {
       category = route.params.cat ? `&category=${route.params.cat}` : "";
     }
     fetch(
-      `${WEB_URL}/wp-json/wc/v2/products?in_stock=true&page=${this.state.page}&per_page=7&status=publish&consumer_key=ck_7715caa12e093d9ab75cb9bbd4299610e53b34d5&consumer_secret=cs_4ee97b04bd222fd83bf6eaccb719ff58d24dcf68${category}`
+      `${WEB_URL}/wp-json/wc/v2/products?in_stock=true&page=${this.state.page}&per_page=7&status=publish&consumer_key=${WOO_KEY}&consumer_secret=${WOO_SECRET}${category}`
     )
       .then((res) => res.json())
       .then((json) => {
-        if (this.state.page === 1) this.setState({ data: json });
-        else this.setState({ data: [...this.state.data, ...json] });
+        if (this._isMounted) {
+          if (this.state.page === 1) this.setState({ data: json });
+          else this.setState({ data: [...this.state.data, ...json] });
+        }
       })
       .catch()
       .finally(() => {
@@ -72,6 +76,9 @@ export default class CatScreen extends React.PureComponent {
 
   componentDidMount() {
     this.fetchProducts();
+  }
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   render() {

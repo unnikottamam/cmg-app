@@ -4,7 +4,7 @@ import { FlatList, StyleSheet } from "react-native";
 import MainTitle from "../components/MainTitle";
 import { useNavigation } from "@react-navigation/native";
 import { v4 as uuidv4 } from "uuid";
-import { WEB_URL } from "../config";
+import { WEB_URL, WOO_KEY, WOO_SECRET } from "../config";
 import ProductWrap from "./ProductWrap";
 
 const renderItem = ({ item }) => (
@@ -36,7 +36,7 @@ export default function ProductList({ title, cat }) {
 
   React.useEffect(() => {
     fetch(
-      `${WEB_URL}/wp-json/wc/v2/products?in_stock=true&page=1&per_page=8&status=publish&consumer_key=ck_7715caa12e093d9ab75cb9bbd4299610e53b34d5&consumer_secret=cs_4ee97b04bd222fd83bf6eaccb719ff58d24dcf68${category}`
+      `${WEB_URL}/wp-json/wc/v2/products?in_stock=true&page=1&per_page=8&status=publish&consumer_key=${WOO_KEY}&consumer_secret=${WOO_SECRET}${category}`
     )
       .then((response) => response.json())
       .then((json) => {

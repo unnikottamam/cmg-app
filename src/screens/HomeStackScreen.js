@@ -7,9 +7,6 @@ import Search from "./Search";
 import Account from "./Account";
 import Home from "./Home";
 import { StyleSheet, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useDispatch } from "react-redux";
-import * as authActions from "../store/actions/auth";
 
 function HomeScreen() {
   return <Home />;
@@ -33,29 +30,7 @@ export default function HomeStackScreen() {
   const { colors } = useTheme();
   const [isLogged, setIsLogged] = React.useState(false);
 
-  const dispatch = useDispatch();
-  React.useEffect(() => {
-    const tryLogin = async () => {
-      const userData = await AsyncStorage.getItem("userData");
-      if (!userData) {
-        setIsLogged(false);
-        return;
-      }
-      const transformedData = JSON.parse(userData);
-      try {
-        dispatch(authActions.authenticate(transformedData));
-        setIsLogged(true);
-      } catch (err) {
-        setIsLogged(false);
-      }
-    };
-    tryLogin();
-  }, []);
-
-  const logout = async () => {
-    await AsyncStorage.removeItem("userData");
-    setIsLogged(false);
-  };
+  const logout = async () => {};
 
   return (
     <Tab.Navigator

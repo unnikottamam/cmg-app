@@ -397,7 +397,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="first_name"
-          defaultValue="Tester"
+          defaultValue=""
         />
         {errors.first_name && (
           <HelperText type="error">First name is required.</HelperText>
@@ -420,7 +420,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="last_name"
-          defaultValue="Tester"
+          defaultValue=""
         />
         {errors.last_name && (
           <HelperText type="error">Last name is required.</HelperText>
@@ -443,7 +443,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="shop_name"
-          defaultValue="Tester"
+          defaultValue=""
         />
         {errors.shop_name && (
           <HelperText type="error">Shop / Vendor name is required.</HelperText>
@@ -467,7 +467,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="email_id"
-          defaultValue="test@test.com"
+          defaultValue=""
         />
         {errors.email_id && (
           <HelperText type="error">Email Address is required.</HelperText>
@@ -490,7 +490,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="username"
-          defaultValue="testers"
+          defaultValue=""
         />
         {errors.username && (
           <HelperText type="error">Username is required.</HelperText>
@@ -515,7 +515,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="password"
-          defaultValue="12345"
+          defaultValue=""
         />
         {errors.password && (
           <HelperText type="error">
@@ -545,7 +545,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="cellnumber"
-          defaultValue="123456"
+          defaultValue=""
         />
         {errors.cellnumber && (
           <HelperText type="error">Cell Number is required.</HelperText>
@@ -578,7 +578,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="country"
-          defaultValue="CA"
+          defaultValue=""
         />
         {errors.country && (
           <HelperText type="error">Country is required</HelperText>
@@ -607,7 +607,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="state"
-          defaultValue="BC"
+          defaultValue=""
         />
         {errors.state && (
           <HelperText type="error">State/Province is required</HelperText>
@@ -664,7 +664,7 @@ export default function Register({ onFormSubmit }) {
             />
           )}
           name="zipcode"
-          defaultValue="V4X0A4"
+          defaultValue=""
         />
         {errors.zipcode && (
           <HelperText type="error">Postal / Zip Code is required.</HelperText>
