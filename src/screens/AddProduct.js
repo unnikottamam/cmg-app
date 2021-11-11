@@ -29,8 +29,10 @@ import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { WEB_URL, WOO_KEY, WOO_SECRET } from "../config";
+import * as SecureStore from "expo-secure-store";
 
 const { width: screenWidth } = Dimensions.get("window");
+
 export default function AddProduct() {
   const { colors } = useTheme();
   const navigation = useNavigation();
@@ -39,6 +41,7 @@ export default function AddProduct() {
   let [maxGallery, setMaxGallery] = React.useState(0);
   const [galleryImages, setGalleryImages] = React.useState([]);
   const [productVideo, setProductVideo] = React.useState(null);
+  const [isFormSubmit, setIsFormSubmit] = React.useState(false);
   const video = React.useRef(null);
 
   const [errVisible, setErrVisible] = React.useState(false);
@@ -49,6 +52,7 @@ export default function AddProduct() {
     register,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm();
 
@@ -91,7 +95,10 @@ export default function AddProduct() {
     });
 
     if (!result.cancelled && maxGallery < 8) {
-      setGalleryImages([...galleryImages, { id: uuidv4(), url: result.uri }]);
+      setGalleryImages((oldimages) => [
+        ...oldimages,
+        { id: uuidv4(), src: result.uri },
+      ]);
       setMaxGallery(maxGallery + 1);
       setValue("galImages", galleryImages);
     }
@@ -126,6 +133,10 @@ export default function AddProduct() {
   };
 
   const onSubmit = async (data) => {
+    setIsFormSubmit(true);
+    const token = await SecureStore.getItemAsync("usertoken");
+    const userid = await SecureStore.getItemAsync("userid");
+
     let dimensions = {
       length: data.length ? data.length : "",
       width: data.width ? data.width : "",
@@ -208,60 +219,137 @@ export default function AddProduct() {
       });
     }
 
-    let formData = {
-      type: "simple",
-      name: data.name.trim(),
-      description: data.description.trim(),
-      categories: [
+    let productImages = [];
+    let outImages = [];
+    if (data.featImg) {
+      productImages.push({
+        src: data.featImg,
+      });
+    }
+    if (galleryImages) {
+      galleryImages.forEach((galItem) => {
+        productImages.push({
+          src: galItem.src,
+        });
+      });
+    }
+
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", `Bearer ${token}`);
+    myHeaders.append("Content-Type", "multipart/form-data");
+
+    let promises = [];
+    productImages.forEach((media) => {
+      let mediaData = new FormData();
+      let uriParts = media.src.split(".");
+      let fileType = uriParts[uriParts.length - 1];
+      let rand = Math.round(Math.random() * 12345 * Math.random());
+      let fileName = `${data.name.trim()}-${
+        data.product_cat
+      }-${userid}-${rand}.${fileType}`;
+
+      mediaData.append("file", {
+        uri: media.src,
+        name: fileName.toLowerCase().replace(/ /g, "-"),
+      });
+      promises.push(
+        fetch(`${WEB_URL}/wp-json/wp/v2/media`, {
+          method: "post",
+          headers: myHeaders,
+          body: mediaData,
+        })
+          .then((res) => res.json())
+          .then((json) => {
+            outImages.push({
+              src: json.source_url,
+            });
+          })
+          .catch()
+      );
+    });
+
+    Promise.all(promises).then(async () => {
+      let productData = {
+        status: "pending",
+        type: "simple",
+        name: data.name.trim(),
+        description: data.description.trim(),
+        categories: [
+          {
+            id: data.product_cat,
+          },
+        ],
+        regular_price: data.regular_price,
+        attributes: attributes,
+        dimensions: dimensions,
+        weight: data.weight,
+        meta_data: [
+          {
+            key: "product_city",
+            value: data.location,
+          },
+        ],
+        manage_stock: true,
+        stock_quantity: 1,
+        stock_status: "instock",
+        images: outImages,
+      };
+      const response = await axios.post(
+        `${WEB_URL}/wp-json/wc/v3/products?consumer_key=${WOO_KEY}&consumer_secret=${WOO_SECRET}`,
+        JSON.stringify(productData),
         {
-          id: data.product_cat,
-        },
-      ],
-      regular_price: data.regular_price,
-      attributes: attributes,
-      dimensions: dimensions,
-      weight: data.weight,
-      meta_data: [
-        {
-          key: "product_city",
-          value: data.location,
-        },
-      ],
-    };
-    console.log(formData);
-    // const response = await axios.post(
-    //   `${WEB_URL}/wp-json/wc/v3/products?consumer_key=${WOO_KEY}&consumer_secret=${WOO_SECRET}`,
-    //   formData
-    // );
-    // const resData = await response.data;
-    // if (resData) {
-    //   if (resData.status !== "success") {
-    //     return console.log(resData);
-    //   }
-    //   reset({
-    //     name: "",
-    //     location: "",
-    //     product_cat: "",
-    //     regular_price: "",
-    //     description: "",
-    //     weight: "",
-    //     length: "",
-    //     width: "",
-    //     height: "",
-    //     pa_amps: "",
-    //     pa_brand: "",
-    //     pa_hp: "",
-    //     pa_model: "",
-    //     pa_phase: "",
-    //     pa_serialno: "",
-    //     pa_voltage: "",
-    //     pa_yearmfg: "",
-    //   });
-    //   setValue("featImg", "");
-    //   setValue("prodVideo", "");
-    //   setValue("galImages", "");
-    //   navigation.navigate("Products", { productAdded: true, id: 361 });
-    // }
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data) {
+        axios
+          .get(
+            `${WEB_URL}/wp-json/wp/v3/useraddproduct?token=${token}&id=${userid}&product=${response.data.id}`
+          )
+          .then((res) => {
+            if (res.data.status !== "success") {
+              return;
+            }
+          })
+          .catch()
+          .finally(() => {
+            reset({
+              name: "",
+              location: "",
+              product_cat: "",
+              regular_price: "",
+              description: "",
+              weight: "",
+              length: "",
+              width: "",
+              height: "",
+              pa_amps: "",
+              pa_brand: "",
+              pa_hp: "",
+              pa_model: "",
+              pa_phase: "",
+              pa_serialno: "",
+              pa_voltage: "",
+              pa_yearmfg: "",
+              featImg: "",
+              prodVideo: "",
+              galImages: "",
+            });
+            setValue("featImg", "");
+            setValue("galImages", "");
+            setValue("prodVideo", "");
+            setIsFormSubmit(false);
+            setFeaturedImage(null);
+            setGalleryImages([]);
+            setMaxGallery(0);
+            setProductVideo(null);
+            navigation.navigate("Products", { newprod: true });
+          });
+      }
+    });
   };
 
   const onError = () => {
@@ -645,7 +733,7 @@ export default function AddProduct() {
                     <AntDesign name="close" color={colors.primary} size={16} />
                   </Pressable>
                   <Image
-                    source={{ uri: image.url }}
+                    source={{ uri: image.src }}
                     style={styles.galItemImg}
                   />
                 </View>
@@ -708,6 +796,7 @@ export default function AddProduct() {
           style={styles.button}
           contentStyle={styles.buttonContent}
           onPress={handleSubmit(onSubmit, onError)}
+          disabled={isFormSubmit}
         >
           Add Product
         </Button>

@@ -2,11 +2,11 @@ import * as React from "react";
 import { KeyboardAvoidingView, ScrollView, StyleSheet } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AddProduct from "./AddProduct";
-import CatDetails from "./CatDetails";
+import MyProductsWrap from "./MyProductsWrap";
 import { Button, Divider, useTheme } from "react-native-paper";
 import Login from "./Login";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const AccountTab = createMaterialTopTabNavigator();
 
@@ -14,6 +14,11 @@ export default function Account() {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const [isLogged, setIsLogged] = React.useState(true);
+  const [productAdded, setProductAdded] = React.useState(false);
+  const route = useRoute();
+  if (route.params) {
+    route.params.newprod ? setProductAdded(true) : setProductAdded(true);
+  }
 
   return isLogged ? (
     <AccountTab.Navigator>
@@ -21,7 +26,7 @@ export default function Account() {
         <AccountTab.Screen
           name="Products"
           options={{ title: "My Products" }}
-          component={CatDetails}
+          component={MyProductsWrap}
         />
         <AccountTab.Screen name="Add Product" component={AddProduct} />
       </AccountTab.Group>

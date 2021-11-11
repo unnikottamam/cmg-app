@@ -15,6 +15,7 @@ import * as yup from "yup";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { ScrollView } from "react-native-gesture-handler";
 import * as SecureStore from "expo-secure-store";
+import { WEB_URL } from "../config";
 
 async function save(key, value) {
   await SecureStore.setItemAsync(key, value);
@@ -49,36 +50,33 @@ export default function Login() {
   const [errVisible, setErrVisible] = React.useState(false);
   const onDismissSnackBar = () => setErrVisible(false);
 
-  getValueFor("password");
+  getValueFor("usertoken");
 
   const onSubmit = async (data) => {
-    const response = await fetch(
-      "https://stag.coastmachinery.com/wp-json/jwt-auth/v1/token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: data.username,
-          password: data.password,
-        }),
-      }
-    );
+    const response = await fetch(`${WEB_URL}/wp-json/jwt-auth/v1/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: data.username,
+        password: data.password,
+      }),
+    });
 
     if (!response.ok) {
       console.log("error");
     }
 
     const resData = await response.json();
-
     if (resData.roles !== "vendor") {
       console.log("not vendor");
     }
 
+    save("usertoken", resData.token);
     save("userid", resData.userid.toString());
     save("userrole", resData.roles);
-    save("username", resData.user_display_name);
+    save("userdisplayname", resData.user_display_name);
     save("username", data.username);
     save("password", data.password.toString(0));
   };

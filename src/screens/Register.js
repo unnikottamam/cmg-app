@@ -303,7 +303,6 @@ export default function Register({ onFormSubmit }) {
       country: yup.string().required(),
       state: yup.string().required(),
       zipcode: yup.string().required(),
-      terms: yup.boolean().required(),
     })
     .required();
 
@@ -323,7 +322,6 @@ export default function Register({ onFormSubmit }) {
 
   React.useEffect(() => {
     register("recaptcha", { required: true });
-    register("terms", { required: true });
   }, [register]);
 
   const onSubmit = async (data) => {
@@ -668,20 +666,6 @@ export default function Register({ onFormSubmit }) {
         />
         {errors.zipcode && (
           <HelperText type="error">Postal / Zip Code is required.</HelperText>
-        )}
-        <Checkbox.Item
-          label="I Agree To Terms & Conditions"
-          status={checked ? "checked" : "unchecked"}
-          onPress={() => {
-            setChecked(!checked);
-            setValue("terms", !checked, { shouldValidate: true });
-          }}
-          name="terms"
-        />
-        {errors.terms && (
-          <HelperText type="error">
-            Please Agree our Terms & Conditions.
-          </HelperText>
         )}
         <ReCaptchaComponent
           captchaDomain={WEB_URL}
