@@ -1,10 +1,12 @@
 import * as React from "react";
-import { FlatList, ScrollView } from "react-native";
+import { FlatList, ScrollView, View } from "react-native";
 import ContentLoader, { Rect } from "react-content-loader/native";
 import { v4 as uuidv4 } from "uuid";
 import { WEB_URL } from "../config";
 import ProductWrap from "./ProductWrap";
-import * as SecureStore from "expo-secure-store";
+import { useAuth } from "../contexts/Auth";
+import { Button, Title } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 
 const MyLoader = (props) => (
   <ContentLoader
@@ -29,73 +31,67 @@ const MyLoader = (props) => (
 );
 
 const renderItem = ({ item }) => <ProductWrap product={item} />;
-export default class MyProducts extends React.PureComponent {
-  _isMounted = false;
-  constructor(props) {
-    super(props);
-    this.state = {
-      data: [],
-      isLoading: true,
-      page: 1,
-      isLoadingMore: true,
-    };
-  }
+export default function MyProducts() {
+  const [isLoading, setLoading] = React.useState(true);
+  const [isProducts, setIsProducts] = React.useState(false);
+  const [data, setData] = React.useState([]);
+  const { authData } = useAuth();
+  const navigation = useNavigation();
 
-  async fetchProducts() {
-    const userid = await SecureStore.getItemAsync("userid");
-    if (!this.state.isLoadingMore) {
-      return;
-    }
-    this._isMounted = true;
-    fetch(`${WEB_URL}/wp-json/wp/v3/prodauth/?id=${userid}`)
-      .then((res) => res.json())
-      .then((json) => {
-        if (this._isMounted) {
-          if (this.state.page === 1) this.setState({ data: json });
-          else this.setState({ data: [...this.state.data, ...json] });
-        }
-      })
-      .catch()
-      .finally(() => {
-        this.setState({ isLoading: false });
-      });
-  }
+  React.useEffect(() => {
+    if (authData && isLoading)
+      fetch(`${WEB_URL}/wp-json/wp/v3/prodauth/?id=${authData.userid}`)
+        .then((response) => response.json())
+        .then((json) => {
+          setData(json);
+          setIsProducts(() => (json ? true : false));
+        })
+        .catch()
+        .finally(() => setLoading(false));
+  }, []);
 
-  fetchMore = () => {
-    this.setState({ page: this.state.page + 1, isLoadingMore: true }, () => {
-      this.fetchProducts();
-      this.setState({ isLoadingMore: false });
-    });
-  };
-
-  componentDidMount() {
-    this.fetchProducts();
-  }
-  componentWillUnmount() {
-    this._isMounted = false;
-  }
-
-  render() {
-    return this.state.isLoading ? (
-      <ScrollView>
-        <MyLoader />
-        <MyLoader />
-        <MyLoader />
-        <MyLoader />
-        <MyLoader />
-        <MyLoader />
-        <MyLoader />
-      </ScrollView>
-    ) : (
-      <FlatList
-        data={this.state.data}
-        renderItem={renderItem}
-        keyExtractor={() => uuidv4()}
-        onEndReachedThreshold={0.75}
-        onEndReached={this.fetchMore}
-        showsVerticalScrollIndicator={false}
-        initialNumToRender={7}
-      />
-    );
-  }
+  return isLoading ? (
+    <ScrollView>
+      <MyLoader />
+      <MyLoader />
+      <MyLoader />
+      <MyLoader />
+      <MyLoader />
+      <MyLoader />
+      <MyLoader />
+    </ScrollView>
+  ) : isProducts ? (
+    <FlatList
+      data={data}
+      renderItem={renderItem}
+      keyExtractor={() => uuidv4()}
+      onEndReachedThreshold={0.75}
+      showsVerticalScrollIndicator={false}
+      initialNumToRender={7}
+    />
+  ) : (
+    <View
+      style={{
+        padding: 30,
+        alignItems: "flex-start",
+      }}
+    >
+      <Title
+        style={{
+          fontSize: 16,
+          lineHeight: 18,
+          marginBottom: 10,
+        }}
+      >
+        You didn't list any machines yet. Add products to your account
+      </Title>
+      <Button
+        icon="plus"
+        mode="contained"
+        onPress={() => navigation.navigate("AddMyProduct")}
+      >
+        Add Product
+      </Button>
+    </View>
+  );
 }

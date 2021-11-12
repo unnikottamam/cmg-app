@@ -14,23 +14,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { ScrollView } from "react-native-gesture-handler";
-import * as SecureStore from "expo-secure-store";
-import { WEB_URL } from "../config";
-
-async function save(key, value) {
-  await SecureStore.setItemAsync(key, value);
-}
-
-async function getValueFor(key) {
-  let result = await SecureStore.getItemAsync(key);
-  if (result) {
-    console.log(result);
-  } else {
-    console.log("none");
-  }
-}
+import { useAuth } from "../contexts/Auth";
 
 export default function Login() {
+  const auth = useAuth();
   const { colors } = useTheme();
   const schema = yup
     .object({
@@ -50,35 +37,11 @@ export default function Login() {
   const [errVisible, setErrVisible] = React.useState(false);
   const onDismissSnackBar = () => setErrVisible(false);
 
-  getValueFor("usertoken");
-
   const onSubmit = async (data) => {
-    const response = await fetch(`${WEB_URL}/wp-json/jwt-auth/v1/token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: data.username,
-        password: data.password,
-      }),
-    });
-
-    if (!response.ok) {
-      console.log("error");
+    const response = await auth.signIn(data.username, data.password);
+    if (!response) {
+      setErrVisible(true);
     }
-
-    const resData = await response.json();
-    if (resData.roles !== "vendor") {
-      console.log("not vendor");
-    }
-
-    save("usertoken", resData.token);
-    save("userid", resData.userid.toString());
-    save("userrole", resData.roles);
-    save("userdisplayname", resData.user_display_name);
-    save("username", data.username);
-    save("password", data.password.toString(0));
   };
 
   return (
@@ -105,7 +68,7 @@ export default function Login() {
           />
         )}
         name="username"
-        defaultValue=""
+        defaultValue="cyril-aucoin"
       />
       {errors.username && (
         <HelperText type="error">Username is required.</HelperText>
@@ -130,7 +93,7 @@ export default function Login() {
           />
         )}
         name="password"
-        defaultValue=""
+        defaultValue="Coast123!"
       />
       {errors.password && (
         <HelperText type="error">Password is required.</HelperText>
@@ -159,7 +122,7 @@ export default function Login() {
             label: "Close",
           }}
         >
-          Login Failed.
+          Please use valid login details.
         </Snackbar>
       </Portal>
     </ScrollView>

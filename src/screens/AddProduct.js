@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import {
+  ActivityIndicator,
   Button,
   Divider,
   HelperText,
@@ -29,12 +30,13 @@ import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { WEB_URL, WOO_KEY, WOO_SECRET } from "../config";
-import * as SecureStore from "expo-secure-store";
+import { useAuth } from "../contexts/Auth";
 
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function AddProduct() {
   const { colors } = useTheme();
+  const { authData } = useAuth();
   const navigation = useNavigation();
 
   const [featuredImage, setFeaturedImage] = React.useState(null);
@@ -44,6 +46,8 @@ export default function AddProduct() {
   const [isFormSubmit, setIsFormSubmit] = React.useState(false);
   const video = React.useRef(null);
 
+  const errorMsg =
+    "Thank you, We will verify your product soon and publish it.";
   const [errVisible, setErrVisible] = React.useState(false);
   const onDismissSnackBar = () => setErrVisible(false);
 
@@ -134,8 +138,7 @@ export default function AddProduct() {
 
   const onSubmit = async (data) => {
     setIsFormSubmit(true);
-    const token = await SecureStore.getItemAsync("usertoken");
-    const userid = await SecureStore.getItemAsync("userid");
+    const { token, userid, password } = authData;
 
     let dimensions = {
       length: data.length ? data.length : "",
@@ -238,7 +241,7 @@ export default function AddProduct() {
     myHeaders.append("Authorization", `Bearer ${token}`);
     myHeaders.append("Content-Type", "multipart/form-data");
 
-    let promises = [];
+    let requests = [];
     productImages.forEach((media) => {
       let mediaData = new FormData();
       let uriParts = media.src.split(".");
@@ -252,7 +255,7 @@ export default function AddProduct() {
         uri: media.src,
         name: fileName.toLowerCase().replace(/ /g, "-"),
       });
-      promises.push(
+      requests.push(
         fetch(`${WEB_URL}/wp-json/wp/v2/media`, {
           method: "post",
           headers: myHeaders,
@@ -268,7 +271,7 @@ export default function AddProduct() {
       );
     });
 
-    Promise.all(promises).then(async () => {
+    Promise.all(requests).then(async () => {
       let productData = {
         status: "pending",
         type: "simple",
@@ -307,7 +310,7 @@ export default function AddProduct() {
       if (response.data) {
         axios
           .get(
-            `${WEB_URL}/wp-json/wp/v3/useraddproduct?token=${token}&id=${userid}&product=${response.data.id}`
+            `${WEB_URL}/wp-json/wp/v3/useraddproduct?user=${authData.user_email}&key=${authData.password}&product=${response.data.id}`
           )
           .then((res) => {
             if (res.data.status !== "success") {
@@ -316,10 +319,10 @@ export default function AddProduct() {
           })
           .catch()
           .finally(() => {
+            setErrVisible(true);
             reset({
               name: "",
               location: "",
-              product_cat: "",
               regular_price: "",
               description: "",
               weight: "",
@@ -338,22 +341,17 @@ export default function AddProduct() {
               prodVideo: "",
               galImages: "",
             });
-            setValue("featImg", "");
-            setValue("galImages", "");
-            setValue("prodVideo", "");
+            setValue("featImg", null);
+            setValue("galImages", null);
+            setValue("prodVideo", null);
             setIsFormSubmit(false);
             setFeaturedImage(null);
             setGalleryImages([]);
             setMaxGallery(0);
             setProductVideo(null);
-            navigation.navigate("Products", { newprod: true });
           });
       }
     });
-  };
-
-  const onError = () => {
-    setErrVisible(true);
   };
 
   return (
@@ -361,7 +359,37 @@ export default function AddProduct() {
       keyboardVerticalOffset={160}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="always">
+      {isFormSubmit && (
+        <View
+          style={{
+            position: "absolute",
+            paddingVertical: 150,
+            top: 0,
+            height: "100%",
+            flex: 1,
+            width: "100%",
+            justifyContent: "center",
+            zIndex: 9,
+          }}
+        >
+          <ActivityIndicator style={{ marginBottom: 15 }} animating={true} />
+          <Text
+            style={{
+              textAlign: "center",
+              fontWeight: "700",
+              fontSize: 16,
+              letterSpacing: 0.5,
+              textTransform: "uppercase",
+            }}
+          >
+            Uploading ...
+          </Text>
+        </View>
+      )}
+      <ScrollView
+        style={{ opacity: isFormSubmit ? 0.15 : 1, ...styles.scrollView }}
+        keyboardShouldPersistTaps="always"
+      >
         <Title style={styles.titleTextOne}>Tell us about your machine</Title>
         <Controller
           control={control}
@@ -795,7 +823,7 @@ export default function AddProduct() {
           mode="contained"
           style={styles.button}
           contentStyle={styles.buttonContent}
-          onPress={handleSubmit(onSubmit, onError)}
+          onPress={handleSubmit(onSubmit)}
           disabled={isFormSubmit}
         >
           Add Product
@@ -808,7 +836,7 @@ export default function AddProduct() {
           label: "Close",
         }}
       >
-        Fill all required fields
+        {errorMsg}
       </Snackbar>
     </KeyboardAvoidingView>
   );

@@ -4,12 +4,10 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  View,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import {
   Button,
-  Checkbox,
   Divider,
   HelperText,
   Portal,
@@ -18,16 +16,19 @@ import {
   Title,
   useTheme,
 } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 import RNPickerSelect from "react-native-picker-select";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import ReCaptchaComponent from "../components/ReCaptchaComponent";
 import { CAPTCHA_KEY, WEB_URL } from "../config";
 import axios from "axios";
+import { useAuth } from "../contexts/Auth";
 
-export default function Register({ onFormSubmit }) {
+export default function Register() {
+  const auth = useAuth();
   const { colors } = useTheme();
-  const [checked, setChecked] = React.useState(true);
+  const navigation = useNavigation();
   const [userCountry, setUserCountry] = React.useState();
   let canadaStates = [
     {
@@ -337,13 +338,13 @@ export default function Register({ onFormSubmit }) {
       data.state
     }&zipcode=${data.zipcode}`;
     const response = await axios.post(
-      `https://stag.coastmachinery.com/wp-content/themes/coast-machinery/inc/form-signup.php`,
+      `${WEB_URL}/wp-content/themes/coast-machinery/inc/form-signup.php`,
       formData
     );
     const resData = await response.data;
     if (resData) {
       if (resData.status !== "success") {
-        return console.log(resData);
+        return setErrVisible(true);
       }
       reset({
         first_name: "",
@@ -360,12 +361,12 @@ export default function Register({ onFormSubmit }) {
         state: "",
         zipcode: "",
       });
-      onFormSubmit(resData);
+      const loginRes = await auth.signIn(data.username, data.password);
+      if (!loginRes) {
+        setErrVisible(true);
+      }
+      navigation.navigate("Dashboard");
     }
-  };
-
-  const onError = () => {
-    setErrVisible(true);
   };
 
   return (
@@ -539,6 +540,7 @@ export default function Register({ onFormSubmit }) {
               value={value}
               label="Cell Number *"
               returnKeyType="done"
+              keyboardType="phone-pad"
               outlineColor={colors.primary}
             />
           )}
@@ -655,7 +657,7 @@ export default function Register({ onFormSubmit }) {
               mode="outlined"
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value}
+              value={value.toUpperCase()}
               label="Postal / Zip Code *"
               returnKeyType="done"
               outlineColor={colors.primary}
@@ -680,7 +682,7 @@ export default function Register({ onFormSubmit }) {
           style={styles.button}
           contentStyle={styles.buttonContent}
           labelStyle={styles.buttonLbl}
-          onPress={handleSubmit(onSubmit, onError)}
+          onPress={handleSubmit(onSubmit)}
         >
           Sign Up
         </Button>
@@ -693,7 +695,7 @@ export default function Register({ onFormSubmit }) {
             label: "Close",
           }}
         >
-          Please fill all required fields.
+          Something went wrong, Please try again.
         </Snackbar>
       </Portal>
     </KeyboardAvoidingView>

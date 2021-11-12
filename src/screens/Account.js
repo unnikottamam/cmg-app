@@ -2,33 +2,33 @@ import * as React from "react";
 import { KeyboardAvoidingView, ScrollView, StyleSheet } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AddProduct from "./AddProduct";
-import MyProductsWrap from "./MyProductsWrap";
+import MyProducts from "./MyProducts";
 import { Button, Divider, useTheme } from "react-native-paper";
 import Login from "./Login";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../contexts/Auth";
 
 const AccountTab = createMaterialTopTabNavigator();
 
 export default function Account() {
   const { colors } = useTheme();
   const navigation = useNavigation();
-  const [isLogged, setIsLogged] = React.useState(true);
-  const [productAdded, setProductAdded] = React.useState(false);
-  const route = useRoute();
-  if (route.params) {
-    route.params.newprod ? setProductAdded(true) : setProductAdded(true);
-  }
+  const { authData } = useAuth();
 
-  return isLogged ? (
+  return authData ? (
     <AccountTab.Navigator>
       <AccountTab.Group>
         <AccountTab.Screen
           name="Products"
           options={{ title: "My Products" }}
-          component={MyProductsWrap}
+          component={MyProducts}
         />
-        <AccountTab.Screen name="Add Product" component={AddProduct} />
+        <AccountTab.Screen
+          name="AddMyProduct"
+          options={{ title: "Add Product" }}
+          component={AddProduct}
+        />
       </AccountTab.Group>
     </AccountTab.Navigator>
   ) : (

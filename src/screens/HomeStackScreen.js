@@ -7,6 +7,7 @@ import Search from "./Search";
 import Account from "./Account";
 import Home from "./Home";
 import { StyleSheet, View } from "react-native";
+import { useAuth } from "../contexts/Auth";
 
 function HomeScreen() {
   return <Home />;
@@ -28,9 +29,12 @@ const Tab = createBottomTabNavigator();
 
 export default function HomeStackScreen() {
   const { colors } = useTheme();
-  const [isLogged, setIsLogged] = React.useState(false);
+  const { authData } = useAuth();
+  const auth = useAuth();
 
-  const logout = async () => {};
+  const logout = async () => {
+    await auth.signOut();
+  };
 
   return (
     <Tab.Navigator
@@ -103,7 +107,7 @@ export default function HomeStackScreen() {
         name="Dashboard"
         component={AccountScreen}
         options={{
-          title: isLogged ? "Dashboard" : "Account",
+          title: authData ? "Dashboard" : "Account",
           tabBarIcon: ({ color, focused }) => (
             <>
               {focused && (
@@ -118,7 +122,7 @@ export default function HomeStackScreen() {
             </>
           ),
           headerRight: () =>
-            isLogged ? <Button onPress={logout}>Logout</Button> : null,
+            authData ? <Button onPress={logout}>Logout</Button> : null,
         }}
       />
     </Tab.Navigator>
