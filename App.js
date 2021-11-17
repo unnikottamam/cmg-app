@@ -1,14 +1,12 @@
 import * as React from "react";
 import {
   Button,
-  DarkTheme as PaperDarkTheme,
   DefaultTheme as PaperDefaultTheme,
   Provider as PaperProvider,
 } from "react-native-paper";
-import { Linking, Platform, useColorScheme } from "react-native";
+import { Linking, Platform } from "react-native";
 import {
   NavigationContainer,
-  DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -39,31 +37,11 @@ const CombinedDefaultTheme = {
     primaryShadow: "rgba(88, 81, 216, 0.4)",
   },
 };
-const CombinedDarkTheme = {
-  ...PaperDarkTheme,
-  ...NavigationDarkTheme,
-  roundness: 0,
-  colors: {
-    ...PaperDarkTheme.colors,
-    ...NavigationDarkTheme.colors,
-    primary: "#E1306C",
-    accent: "#C13584",
-    solidColor: "#fff",
-    placeholder: "rgba(255, 255, 255, 0.8)",
-    grey: "rgba(255, 255, 255, 0.08)",
-    greyDark: "rgba(255, 255, 255, 0.20)",
-    greyLight: "rgba(255, 255, 255, 0.03)",
-    inputColor: "rgba(255, 255, 255, 0.8)",
-    backdrop: "rgba(0, 0, 0, 0.88)",
-    primaryShadow: "rgba(225, 48, 108, 0.6)",
-  },
-};
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const scheme = useColorScheme();
-  const theme = scheme !== "dark" ? CombinedDefaultTheme : CombinedDarkTheme;
+  const theme = CombinedDefaultTheme;
   const { authData } = useAuth();
 
   return (

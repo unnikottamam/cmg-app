@@ -332,11 +332,11 @@ export default function ProductDetails() {
                   ...styles.titleText,
                 }}
               >
-                Hear from us ?
+                Text Or Give Us A Call
               </Title>
               <Text style={styles.paraText}>
-                Quas dignissimos laudantium praesentium facilis sed impedit fuga
-                sequi ullam non ratione, maiores cumque sapiente?
+                CMG has friendly staff who can answer your questions about
+                buying or selling machines.
               </Text>
               <View style={styles.prodBottombtns}>
                 <Button

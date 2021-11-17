@@ -1,34 +1,37 @@
 {
   "expo": {
-    "name": "paper-app",
-    "slug": "paper-app",
+    "name": "Coast Machinery Group",
+    "slug": "cmg-listing",
+    "privacy": "public",
+    "platforms": ["android", "ios"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1E1E1E"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 5000
     },
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": ["**/*"],
     "ios": {
+      "bundleIdentifier": "com.coastmachinery.listing",
+      "buildNumber": "1.0.0",
       "supportsTablet": true,
       "userInterfaceStyle": "automatic"
     },
     "android": {
+      "package": "com.coastmachinery.listing",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#1E1E1E"
       },
-      "userInterfaceStyle": "automatic"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "scheme": "cmg"
+      "userInterfaceStyle": "automatic",
+      "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+    }
   }
 }

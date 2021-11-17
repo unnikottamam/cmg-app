@@ -68,7 +68,7 @@ export default function Login() {
           />
         )}
         name="username"
-        defaultValue="cyril-aucoin"
+        defaultValue=""
       />
       {errors.username && (
         <HelperText type="error">Username is required.</HelperText>
@@ -93,7 +93,7 @@ export default function Login() {
           />
         )}
         name="password"
-        defaultValue="Coast123!"
+        defaultValue=""
       />
       {errors.password && (
         <HelperText type="error">Password is required.</HelperText>
