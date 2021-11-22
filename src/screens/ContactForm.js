@@ -4,16 +4,18 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  View,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import {
   Button,
   HelperText,
+  RadioButton,
+  Text,
   TextInput,
   Title,
   useTheme,
 } from "react-native-paper";
-import RNPickerSelect from "react-native-picker-select";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { CAPTCHA_KEY, WEB_URL } from "../config";
@@ -38,7 +40,7 @@ export default function ContactForm({
           ? yup.string().required()
           : yup.string().notRequired(),
       offer_price: offer ? yup.number().required() : yup.number().notRequired(),
-      country: shipping ? yup.string().required() : yup.string().notRequired(),
+      country: yup.string().notRequired(),
       zip_code: shipping ? yup.string().required() : yup.string().notRequired(),
       message:
         shipping || offer
@@ -58,6 +60,7 @@ export default function ContactForm({
   } = useForm({
     resolver: yupResolver(schema),
   });
+  const [userCountry, setUserCountry] = React.useState("Canada");
 
   React.useEffect(() => {
     register("recaptcha", { required: true });
@@ -70,9 +73,9 @@ export default function ContactForm({
       data.email_id
     }&contact_no=${data.phone_number ? data.phone_number : ""}&message=${
       data.message ? data.message : ""
-    }&offer_price=${data.offer_price ? data.offer_price : ""}&country=${
-      data.country ? data.country : ""
-    }&zipcode=${data.zip_code ? data.zip_code : ""}`;
+    }&offer_price=${
+      data.offer_price ? data.offer_price : ""
+    }&country=${userCountry}&zipcode=${data.zip_code ? data.zip_code : ""}`;
     const response = await axios.post(
       `https://stag.coastmachinery.com/wp-content/themes/coast-machinery/inc/form-action.php`,
       formData
@@ -209,39 +212,6 @@ export default function ContactForm({
               rules={{
                 required: true,
               }}
-              render={({ field: { onChange } }) => (
-                <RNPickerSelect
-                  placeholder={{ label: "Country *", value: null }}
-                  useNativeAndroidPickerStyle={false}
-                  textInputProps={{
-                    style: {
-                      borderColor: colors.inputColor,
-                      color: colors.inputColor,
-                      backgroundColor: colors.surface,
-                      ...styles.inputStyles,
-                    },
-                  }}
-                  onValueChange={(value) => {
-                    onChange(value);
-                  }}
-                  items={[
-                    { label: "Canada", value: "Canada" },
-                    { label: "USA", value: "USA" },
-                    { label: "Mexico", value: "Mexico" },
-                  ]}
-                />
-              )}
-              name="country"
-              defaultValue=""
-            />
-            {errors.country && (
-              <HelperText type="error">Country is required</HelperText>
-            )}
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   style={{
@@ -264,6 +234,25 @@ export default function ContactForm({
                 Zip / Postal Code is required
               </HelperText>
             )}
+            <Text>Shipping Country</Text>
+            <View style={{ alignItems: "center", flexDirection: "row" }}>
+              <View style={{ alignItems: "center", flexDirection: "row" }}>
+                <RadioButton
+                  value="USA"
+                  status={userCountry === "USA" ? "checked" : "unchecked"}
+                  onPress={() => setUserCountry("USA")}
+                />
+                <Text>USA</Text>
+              </View>
+              <View style={{ alignItems: "center", flexDirection: "row" }}>
+                <RadioButton
+                  value="Canada"
+                  status={userCountry === "Canada" ? "checked" : "unchecked"}
+                  onPress={() => setUserCountry("Canada")}
+                />
+                <Text>Canada</Text>
+              </View>
+            </View>
           </>
         )}
 

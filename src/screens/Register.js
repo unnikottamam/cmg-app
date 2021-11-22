@@ -4,6 +4,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  View,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -11,13 +12,14 @@ import {
   Divider,
   HelperText,
   Portal,
+  RadioButton,
   Snackbar,
+  Text,
   TextInput,
   Title,
   useTheme,
 } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import RNPickerSelect from "react-native-picker-select";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import ReCaptchaComponent from "../components/ReCaptchaComponent";
@@ -29,267 +31,7 @@ export default function Register() {
   const auth = useAuth();
   const { colors } = useTheme();
   const navigation = useNavigation();
-  const [userCountry, setUserCountry] = React.useState();
-  let canadaStates = [
-    {
-      label: "Alberta",
-      value: "AB",
-    },
-    {
-      label: "British Columbia",
-      value: "BC",
-    },
-    {
-      label: "Manitoba",
-      value: "MB",
-    },
-    {
-      label: "New Brunswick",
-      value: "NB",
-    },
-    {
-      label: "Newfoundland and Labrador",
-      value: "NL",
-    },
-    {
-      label: "Northwest Territories",
-      value: "NT",
-    },
-    {
-      label: "Nova Scotia",
-      value: "NS",
-    },
-    {
-      label: "Nunavut",
-      value: "NU",
-    },
-    {
-      label: "Ontario",
-      value: "ON",
-    },
-    {
-      label: "Prince Edward Island",
-      value: "PE",
-    },
-    {
-      label: "Quebec",
-      value: "QC",
-    },
-    {
-      label: "Saskatchewan",
-      value: "SK",
-    },
-    {
-      label: "Yukon Territory",
-      value: "YT",
-    },
-  ];
-  let usaStates = [
-    {
-      value: "AL",
-      label: "Alabama",
-    },
-    {
-      value: "AK",
-      label: "Alaska",
-    },
-    {
-      value: "AZ",
-      label: "Arizona",
-    },
-    {
-      value: "AR",
-      label: "Arkansas",
-    },
-    {
-      value: "CA",
-      label: "California",
-    },
-    {
-      value: "CO",
-      label: "Colorado",
-    },
-    {
-      value: "CT",
-      label: "Connecticut",
-    },
-    {
-      value: "DE",
-      label: "Delaware",
-    },
-    {
-      value: "DC",
-      label: "District Of Columbia",
-    },
-    {
-      value: "FL",
-      label: "Florida",
-    },
-    {
-      value: "GA",
-      label: "Georgia",
-    },
-    {
-      value: "HI",
-      label: "Hawaii",
-    },
-    {
-      value: "ID",
-      label: "Idaho",
-    },
-    {
-      value: "IL",
-      label: "Illinois",
-    },
-    {
-      value: "IN",
-      label: "Indiana",
-    },
-    {
-      value: "IA",
-      label: "Iowa",
-    },
-    {
-      value: "KS",
-      label: "Kansas",
-    },
-    {
-      value: "KY",
-      label: "Kentucky",
-    },
-    {
-      value: "LA",
-      label: "Louisiana",
-    },
-    {
-      value: "ME",
-      label: "Maine",
-    },
-    {
-      value: "MD",
-      label: "Maryland",
-    },
-    {
-      value: "MA",
-      label: "Massachusetts",
-    },
-    {
-      value: "MI",
-      label: "Michigan",
-    },
-    {
-      value: "MN",
-      label: "Minnesota",
-    },
-    {
-      value: "MS",
-      label: "Mississippi",
-    },
-    {
-      value: "MO",
-      label: "Missouri",
-    },
-    {
-      value: "MT",
-      label: "Montana",
-    },
-    {
-      value: "NE",
-      label: "Nebraska",
-    },
-    {
-      value: "NV",
-      label: "Nevada",
-    },
-    {
-      value: "NH",
-      label: "New Hampshire",
-    },
-    {
-      value: "NJ",
-      label: "New Jersey",
-    },
-    {
-      value: "NM",
-      label: "New Mexico",
-    },
-    {
-      value: "NY",
-      label: "New York",
-    },
-    {
-      value: "NC",
-      label: "North Carolina",
-    },
-    {
-      value: "ND",
-      label: "North Dakota",
-    },
-    {
-      value: "OH",
-      label: "Ohio",
-    },
-    {
-      value: "OK",
-      label: "Oklahoma",
-    },
-    {
-      value: "OR",
-      label: "Oregon",
-    },
-    {
-      value: "PA",
-      label: "Pennsylvania",
-    },
-    {
-      value: "RI",
-      label: "Rhode Island",
-    },
-    {
-      value: "SC",
-      label: "South Carolina",
-    },
-    {
-      value: "SD",
-      label: "South Dakota",
-    },
-    {
-      value: "TN",
-      label: "Tennessee",
-    },
-    {
-      value: "TX",
-      label: "Texas",
-    },
-    {
-      value: "UT",
-      label: "Utah",
-    },
-    {
-      value: "VT",
-      label: "Vermont",
-    },
-    {
-      value: "VA",
-      label: "Virginia",
-    },
-    {
-      value: "WA",
-      label: "Washington",
-    },
-    {
-      value: "WV",
-      label: "West Virginia",
-    },
-    {
-      value: "WI",
-      label: "Wisconsin",
-    },
-    {
-      value: "WY",
-      label: "Wyoming",
-    },
-  ];
+  const [userCountry, setUserCountry] = React.useState("Canada");
 
   const schema = yup
     .object({
@@ -301,8 +43,7 @@ export default function Register() {
       password: yup.string().required().min(5),
       email_id: yup.string().email().required(),
       cellnumber: yup.string().required(),
-      country: yup.string().required(),
-      state: yup.string().required(),
+      country: yup.string(),
       zipcode: yup.string().required(),
     })
     .required();
@@ -334,8 +75,8 @@ export default function Register() {
       data.cellnumber
     }&message=${data.message ? data.message : ""}&street=${
       data.street ? data.street : ""
-    }&city=${data.city ? data.city : ""}&country=${data.country}&state=${
-      data.state
+    }&city=${data.city ? data.city : ""}&country=${userCountry}&state=${
+      data.state ? data.state : ""
     }&zipcode=${data.zipcode}`;
     const response = await axios.post(
       `${WEB_URL}/wp-content/themes/coast-machinery/inc/form-signup.php`,
@@ -358,7 +99,6 @@ export default function Register() {
         street: "",
         city: "",
         country: "",
-        state: "",
         zipcode: "",
       });
       const loginRes = await auth.signIn(data.username, data.password);
@@ -550,68 +290,25 @@ export default function Register() {
         {errors.cellnumber && (
           <HelperText type="error">Cell Number is required.</HelperText>
         )}
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({ field: { onChange } }) => (
-            <RNPickerSelect
-              placeholder={{ label: "Country *", value: null }}
-              useNativeAndroidPickerStyle={false}
-              textInputProps={{
-                style: {
-                  borderColor: colors.primary,
-                  color: colors.inputColor,
-                  backgroundColor: colors.surface,
-                  ...styles.inputStyles,
-                },
-              }}
-              onValueChange={(value) => {
-                onChange(value);
-                setUserCountry(value);
-              }}
-              items={[
-                { label: "Canada", value: "CA" },
-                { label: "USA", value: "USA" },
-              ]}
+        <Text>Country</Text>
+        <View style={{ alignItems: "center", flexDirection: "row" }}>
+          <View style={{ alignItems: "center", flexDirection: "row" }}>
+            <RadioButton
+              value="USA"
+              status={userCountry === "USA" ? "checked" : "unchecked"}
+              onPress={() => setUserCountry("USA")}
             />
-          )}
-          name="country"
-          defaultValue=""
-        />
-        {errors.country && (
-          <HelperText type="error">Country is required</HelperText>
-        )}
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({ field: { onChange } }) => (
-            <RNPickerSelect
-              placeholder={{ label: "State/Province *", value: null }}
-              useNativeAndroidPickerStyle={false}
-              textInputProps={{
-                style: {
-                  borderColor: colors.primary,
-                  color: colors.inputColor,
-                  backgroundColor: colors.surface,
-                  ...styles.inputStyles,
-                },
-              }}
-              onValueChange={(value) => {
-                onChange(value);
-              }}
-              items={userCountry === "USA" ? usaStates : canadaStates}
+            <Text>USA</Text>
+          </View>
+          <View style={{ alignItems: "center", flexDirection: "row" }}>
+            <RadioButton
+              value="Canada"
+              status={userCountry === "Canada" ? "checked" : "unchecked"}
+              onPress={() => setUserCountry("Canada")}
             />
-          )}
-          name="state"
-          defaultValue=""
-        />
-        {errors.state && (
-          <HelperText type="error">State/Province is required</HelperText>
-        )}
+            <Text>Canada</Text>
+          </View>
+        </View>
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (

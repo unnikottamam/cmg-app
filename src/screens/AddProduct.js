@@ -21,8 +21,6 @@ import {
   Title,
   useTheme,
 } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
-import RNPickerSelect from "react-native-picker-select";
 import * as ImagePicker from "expo-image-picker";
 import { Video } from "expo-av";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -37,7 +35,6 @@ const { width: screenWidth } = Dimensions.get("window");
 export default function AddProduct() {
   const { colors } = useTheme();
   const { authData } = useAuth();
-  const navigation = useNavigation();
 
   const [featuredImage, setFeaturedImage] = React.useState(null);
   let [maxGallery, setMaxGallery] = React.useState(0);
@@ -247,9 +244,7 @@ export default function AddProduct() {
       let uriParts = media.src.split(".");
       let fileType = uriParts[uriParts.length - 1];
       let rand = Math.round(Math.random() * 12345 * Math.random());
-      let fileName = `${data.name.trim()}-${
-        data.product_cat
-      }-${userid}-${rand}.${fileType}`;
+      let fileName = `${data.name.trim()}-${userid}-${rand}.${fileType}`;
 
       mediaData.append("file", {
         uri: media.src,
@@ -277,11 +272,6 @@ export default function AddProduct() {
         type: "simple",
         name: data.name.trim(),
         description: data.description.trim(),
-        categories: [
-          {
-            id: data.product_cat,
-          },
-        ],
         regular_price: data.regular_price,
         attributes: attributes,
         dimensions: dimensions,
@@ -430,40 +420,6 @@ export default function AddProduct() {
           name="location"
           defaultValue=""
         />
-
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({ field: { onChange } }) => (
-            <RNPickerSelect
-              placeholder={{ label: "Select a category *", value: null }}
-              textInputProps={{
-                style: {
-                  borderColor: colors.inputColor,
-                  color: colors.inputColor,
-                  ...styles.inputStyles,
-                },
-              }}
-              useNativeAndroidPickerStyle={false}
-              onValueChange={(value) => {
-                onChange(value);
-              }}
-              items={[
-                { label: "Woodworking", value: 361 },
-                { label: "Metalworking", value: 377 },
-                { label: "Stone & Glass", value: 380 },
-                { label: "Warehousing", value: 382 },
-              ]}
-            />
-          )}
-          name="product_cat"
-          defaultValue=""
-        />
-        {errors.product_cat && (
-          <HelperText type="error">Select a category.</HelperText>
-        )}
 
         <Controller
           control={control}

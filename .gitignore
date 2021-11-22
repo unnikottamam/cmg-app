@@ -11,6 +11,8 @@ npm-debug.*
 *.orig.*
 web-build/
 package-lock.json
+credentials
+credentials.json
 
 # macOS
 .DS_Store
