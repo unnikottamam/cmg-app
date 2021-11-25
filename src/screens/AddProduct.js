@@ -243,12 +243,12 @@ export default function AddProduct() {
       let mediaData = new FormData();
       let uriParts = media.src.split(".");
       let fileType = uriParts[uriParts.length - 1];
-      let rand = Math.round(Math.random() * 12345 * Math.random());
-      let fileName = `${data.name.trim()}-${userid}-${rand}.${fileType}`;
-
+      let fileName = `img_${uuidv4()}.${fileType}`;
+      let newImageUri = "file:///" + media.src.split("file:/").join("");
       mediaData.append("file", {
-        uri: media.src,
-        name: fileName.toLowerCase().replace(/ /g, "-"),
+        uri: newImageUri,
+        type: `image/${fileType}`,
+        name: fileName,
       });
       requests.push(
         fetch(`${WEB_URL}/wp-json/wp/v2/media`, {
@@ -262,7 +262,7 @@ export default function AddProduct() {
               src: json.source_url,
             });
           })
-          .catch()
+          .catch((err) => console.log(err))
       );
     });
 
