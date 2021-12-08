@@ -254,8 +254,9 @@ export default function ProductDetails() {
                       scrollEnabled={true}
                       originWhitelist={["*"]}
                       source={{
-                        html: `<head>
-                          <meta name="viewport" content="width=device-width, initial-scale=1">
+                        html: `<html>
+                          <head>
+                            <meta name="viewport" content="width=device-width, initial-scale=1">
                             <style>
                               body {
                                 background-color: ${colors.greyLight};
@@ -267,14 +268,16 @@ export default function ProductDetails() {
                               }
                               br {display: none;}
                               p:empty {display: none;}
-                              h2, h3, h4, h5, h6, p, ul, ol {margin-bottom: 5px}
+                              h2, h3, h4, h5, h6, p, ul, ol {margin-top: 0; margin-bottom: 5px}
+                              h2 {margin-top: 5px; font-size: 18px; line-height: 1.2}
+                              h3 {margin-top: 10px; font-size: 16px; line-height: 1.2}
                               h5, h6 {font-size: 14px; font-weight: 400}
                             </style>
                           </head>
                           <body>
                             ${product.description.replace(/&nbsp;/g, "")}
                           </body>
-                          </html>`,
+                        </html>`,
                       }}
                     />
                   </List.Accordion>
