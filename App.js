@@ -17,6 +17,7 @@ import ProductDetails from "./src/screens/ProductDetail";
 import CatDetails from "./src/screens/CatDetails";
 import Register from "./src/screens/Register";
 import { AuthProvider, useAuth } from "./src/contexts/Auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 
 const CombinedDefaultTheme = {
@@ -56,68 +57,55 @@ export default function App() {
   const [pushToken, setPushToken] = React.useState();
 
   React.useEffect(async () => {
-    let token;
-    const { status: existingStatus } =
-      await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== "granted") {
-      return;
-    }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
-    setPushToken(token);
-    if (token) {
-      const tokenRes = await fetch(
-        "https://app-data-d898a-default-rtdb.firebaseio.com/pushtokens.json?apiKey=AIzaSyAH-o1jtTEdfU9KAnztrN_cm81RAetUxlo",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            deviceToken: pushToken,
-          }),
+    try {
+      const deviceToken = await AsyncStorage.getItem("@deviceToken");
+      if (!deviceToken) {
+        let token;
+        const { status: existingStatus } =
+          await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== "granted") {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
         }
-      );
+        if (finalStatus !== "granted") {
+          return;
+        }
+        token = (await Notifications.getExpoPushTokenAsync()).data;
+        if (token) {
+          setPushToken(token);
+          await AsyncStorage.setItem("@deviceToken", token);
+          const tokenRes = await fetch(
+            "https://app-data-d898a-default-rtdb.firebaseio.com/pushtokens.json?apiKey=AIzaSyAH-o1jtTEdfU9KAnztrN_cm81RAetUxlo",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                deviceToken: token,
+              }),
+            }
+          );
+        }
+      }
+    } catch (error) {
+      setPushToken(undefined);
     }
   }, []);
 
   React.useEffect(() => {
     const backgroundSubscription =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(response);
-      });
+      Notifications.addNotificationResponseReceivedListener((response) => {});
 
     const foregroundSubscription =
-      Notifications.addNotificationReceivedListener((notification) => {
-        console.log(notification);
-      });
+      Notifications.addNotificationReceivedListener((notification) => {});
 
     return () => {
       foregroundSubscription.remove();
       backgroundSubscription.remove();
     };
   }, []);
-
-  const triggerNotificationHandler = () => {
-    fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Accept-Encoding": "gzip, deflate",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        to: pushToken,
-        data: { extraData: "Some Data" },
-        title: "Test Notificatiion",
-        body: "Igonre this test notification !",
-      }),
-    });
-  };
 
   return (
     <AuthProvider>

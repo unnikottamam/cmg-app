@@ -4,7 +4,7 @@
     "slug": "cmg-listing",
     "privacy": "public",
     "platforms": ["android", "ios"],
-    "version": "1.0.7",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -19,7 +19,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "bundleIdentifier": "com.coastmachinery.listing",
-      "buildNumber": "1.0.7",
+      "buildNumber": "1.0.8",
       "supportsTablet": true,
       "userInterfaceStyle": "automatic",
       "config": {
@@ -28,7 +28,7 @@
     },
     "android": {
       "package": "com.coastmachinery.listing",
-      "versionCode": 7,
+      "versionCode": 8,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1E1E1E"
